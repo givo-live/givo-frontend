@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Givo — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #FAFAF7; --bg2: #F2F0EB; --bg3: #E8E5DD;
+  --ink: #1C1B18; --ink2: #5A5850; --ink3: #9A9890;
+  --green: #2A7A5A; --green-light: #E8F4EE; --green-mid: #4A9A78;
+  --gold: #B8860B; --gold-light: #FBF5E0;
+  --border: rgba(28,27,24,0.1); --border2: rgba(28,27,24,0.06);
+  --r: 12px; --r-lg: 20px;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
+
+/* NAV */
+nav { background: white; border-bottom: 1px solid var(--border); padding: 0 40px; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.nav-logo { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; color: var(--ink); text-decoration: none; }
+.nav-logo span { color: var(--green); }
+.nav-right { display: flex; align-items: center; gap: 20px; }
+.nav-email { font-size: 13px; color: var(--ink2); }
+.nav-signout { font-size: 13px; color: var(--ink3); cursor: pointer; background: none; border: none; font-family: 'DM Sans', sans-serif; transition: color 0.2s; }
+.nav-signout:hover { color: var(--ink); }
+
+/* LAYOUT */
+.container { max-width: 1000px; margin: 0 auto; padding: 40px 24px 80px; }
+
+/* TABS */
+.tabs { display: flex; gap: 4px; background: var(--bg2); border-radius: 100px; padding: 4px; margin-bottom: 36px; width: fit-content; }
+.tab { padding: 8px 20px; border-radius: 100px; font-size: 14px; font-weight: 400; color: var(--ink2); cursor: pointer; border: none; background: none; font-family: 'DM Sans', sans-serif; transition: all 0.2s; white-space: nowrap; }
+.tab.active { background: white; color: var(--ink); font-weight: 500; box-shadow: 0 1px 4px rgba(28,27,24,0.1); }
+
+/* PANELS */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* CARDS */
+.card { background: white; border: 1px solid var(--border); border-radius: var(--r-lg); padding: 28px; margin-bottom: 20px; }
+.card-title { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 400; margin-bottom: 6px; letter-spacing: -0.3px; }
+.card-sub { font-size: 14px; color: var(--ink2); font-weight: 300; margin-bottom: 24px; }
+
+/* STATS ROW */
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+.stat-card { background: white; border: 1px solid var(--border); border-radius: var(--r-lg); padding: 24px; }
+.stat-label { font-size: 12px; font-weight: 500; color: var(--ink3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.stat-value { font-family: 'Fraunces', serif; font-size: 36px; font-weight: 300; line-height: 1; letter-spacing: -1px; }
+.stat-value.green { color: var(--green); }
+.stat-sub { font-size: 12px; color: var(--ink3); margin-top: 4px; }
+
+/* STATUS BADGE */
+.status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 100px; font-size: 12px; font-weight: 500; }
+.badge-active { background: var(--green-light); color: var(--green); }
+.badge-inactive { background: var(--bg2); color: var(--ink2); }
+.badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+.badge-active .badge-dot { background: var(--green); animation: pulse 2s infinite; }
+.badge-inactive .badge-dot { background: var(--ink3); }
+
+/* FORMS */
+.form-group { margin-bottom: 20px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--ink2); }
+input, select, textarea { width: 100%; padding: 12px 16px; border: 1.5px solid var(--border); border-radius: var(--r); font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--ink); background: white; outline: none; transition: border-color 0.2s; }
+input:focus, select:focus { border-color: var(--green); }
+select { cursor: pointer; }
+
+/* PERCENT DISPLAY */
+.percent-row { display: flex; align-items: center; gap: 16px; }
+.percent-big { font-family: 'Fraunces', serif; font-size: 52px; font-weight: 300; color: var(--green); line-height: 1; min-width: 80px; }
+input[type="range"] { flex: 1; -webkit-appearance: none; height: 6px; border-radius: 3px; background: rgba(42,122,90,0.15); outline: none; border: none; padding: 0; }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--green); cursor: pointer; box-shadow: 0 2px 8px rgba(42,122,90,0.3); }
+
+/* BUTTONS */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 24px; border-radius: 100px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; border: none; transition: all 0.2s; }
+.btn-primary { background: var(--green); color: white; }
+.btn-primary:hover { background: var(--green-mid); transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.btn-outline { background: transparent; color: var(--ink); border: 1.5px solid var(--border); }
+.btn-outline:hover { border-color: rgba(28,27,24,0.25); background: var(--bg2); }
+.btn-full { width: 100%; }
+
+/* BANK CONNECTION */
+.bank-connect-box { border: 2px dashed var(--border); border-radius: var(--r-lg); padding: 40px; text-align: center; margin-bottom: 20px; }
+.bank-connect-box .icon { font-size: 40px; margin-bottom: 16px; }
+.bank-connect-box h3 { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 400; margin-bottom: 8px; }
+.bank-connect-box p { font-size: 14px; color: var(--ink2); margin-bottom: 24px; font-weight: 300; }
+
+.connected-bank { display: flex; align-items: center; gap: 14px; padding: 16px 20px; background: var(--green-light); border: 1px solid rgba(42,122,90,0.2); border-radius: var(--r-lg); margin-bottom: 16px; }
+.bank-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--green); display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; font-weight: 700; font-family: 'Fraunces', serif; flex-shrink: 0; }
+.bank-info { flex: 1; }
+.bank-info strong { display: block; font-size: 15px; font-weight: 500; }
+.bank-info span { font-size: 13px; color: var(--ink2); }
+.bank-status { font-size: 12px; color: var(--green); font-weight: 500; }
+
+/* TRIGGER OPTIONS */
+.trigger-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.trigger-opt { padding: 14px 16px; border: 1.5px solid var(--border); border-radius: var(--r); cursor: pointer; transition: all 0.2s; text-align: left; background: white; font-family: 'DM Sans', sans-serif; }
+.trigger-opt strong { display: block; font-size: 14px; font-weight: 500; color: var(--ink); margin-bottom: 2px; }
+.trigger-opt span { font-size: 12px; color: var(--ink3); }
+.trigger-opt.selected { border-color: var(--green); background: var(--green-light); }
+.trigger-opt.selected strong { color: var(--green); }
+
+/* TRANSFER HISTORY */
+.tx-list { display: flex; flex-direction: column; gap: 10px; }
+.tx-item { display: flex; align-items: center; gap: 14px; padding: 16px; background: white; border: 1px solid var(--border); border-radius: var(--r-lg); transition: box-shadow 0.2s; }
+.tx-item:hover { box-shadow: 0 4px 12px rgba(28,27,24,0.06); }
+.tx-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.tx-icon.green { background: var(--green-light); }
+.tx-meta { flex: 1; }
+.tx-meta strong { display: block; font-size: 14px; font-weight: 500; }
+.tx-meta span { font-size: 12px; color: var(--ink2); }
+.tx-amount { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 400; color: var(--green); }
+.tx-status { font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 20px; background: var(--green-light); color: var(--green); }
+
+.empty-state { text-align: center; padding: 48px 24px; color: var(--ink2); }
+.empty-state .empty-icon { font-size: 36px; margin-bottom: 14px; }
+.empty-state p { font-size: 15px; font-weight: 300; }
+
+/* ALERT */
+.alert { padding: 14px 18px; border-radius: var(--r); font-size: 14px; margin-bottom: 18px; display: none; }
+.alert-success { background: var(--green-light); border: 1px solid rgba(42,122,90,0.2); color: var(--green); }
+.alert-error { background: #FEF2F2; border: 1px solid #FECACA; color: #DC2626; }
+
+/* SETTINGS */
+.settings-section { margin-bottom: 32px; }
+.settings-label { font-size: 12px; font-weight: 500; color: var(--ink3); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+.settings-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border2); }
+.settings-row:last-child { border-bottom: none; }
+.settings-row .sr-label { font-size: 15px; font-weight: 400; }
+.settings-row .sr-value { font-size: 14px; color: var(--ink2); }
+
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+@media (max-width: 640px) {
+  nav { padding: 0 16px; }
+  .container { padding: 24px 16px 60px; }
+  .stats-row { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+  .trigger-grid { grid-template-columns: 1fr; }
+  .tabs { width: 100%; overflow-x: auto; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">Givo<span>.</span></a>
+  <div class="nav-right">
+    <span class="nav-email" id="navEmail"></span>
+    <button class="nav-signout" onclick="signOut()">Sign out</button>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('overview', this)">Overview</button>
+    <button class="tab" onclick="showTab('bank', this)">Bank</button>
+    <button class="tab" onclick="showTab('rules', this)">Giving rules</button>
+    <button class="tab" onclick="showTab('history', this)">History</button>
+    <button class="tab" onclick="showTab('settings', this)">Settings</button>
+  </div>
+
+  <!-- OVERVIEW PANEL -->
+  <div class="panel active" id="panel-overview">
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Given this month</div>
+        <div class="stat-value green" id="stat-month">$0</div>
+        <div class="stat-sub">Auto-transferred</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">All time given</div>
+        <div class="stat-value" id="stat-total">$0</div>
+        <div class="stat-sub">Since you joined</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Giving status</div>
+        <div style="margin-top:8px">
+          <span class="status-badge badge-inactive" id="statusBadge">
+            <span class="badge-dot"></span>
+            <span id="statusText">Not set up</span>
+          </span>
+        </div>
+        <div class="stat-sub" id="stat-rule">No rules configured</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Getting started</div>
+      <div class="card-sub">Complete these steps to start giving automatically.</div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div style="display:flex; align-items:center; gap:14px; padding:14px; background:var(--bg2); border-radius:var(--r);">
+          <div style="width:28px; height:28px; border-radius:50%; background:var(--green); color:white; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; flex-shrink:0;">✓</div>
+          <div><strong style="font-size:14px;">Create your account</strong><br><span style="font-size:12px; color:var(--ink2);">Done</span></div>
+        </div>
+        <div id="step-bank" style="display:flex; align-items:center; gap:14px; padding:14px; background:var(--bg2); border-radius:var(--r); cursor:pointer;" onclick="showTab('bank', document.querySelectorAll('.tab')[1])">
+          <div style="width:28px; height:28px; border-radius:50%; background:var(--border); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; flex-shrink:0; color:var(--ink3);">2</div>
+          <div><strong style="font-size:14px;">Connect your bank</strong><br><span style="font-size:12px; color:var(--ink2);">Link your checking account</span></div>
+          <span style="margin-left:auto; font-size:13px; color:var(--green);">→</span>
+        </div>
+        <div id="step-rules" style="display:flex; align-items:center; gap:14px; padding:14px; background:var(--bg2); border-radius:var(--r); cursor:pointer;" onclick="showTab('rules', document.querySelectorAll('.tab')[2])">
+          <div style="width:28px; height:28px; border-radius:50%; background:var(--border); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; flex-shrink:0; color:var(--ink3);">3</div>
+          <div><strong style="font-size:14px;">Set your giving rules</strong><br><span style="font-size:12px; color:var(--ink2);">Choose your percentage and trigger</span></div>
+          <span style="margin-left:auto; font-size:13px; color:var(--green);">→</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BANK PANEL -->
+  <div class="panel" id="panel-bank">
+    <div class="card">
+      <div class="card-title">Connected bank</div>
+      <div class="card-sub">Givo monitors this account for incoming deposits.</div>
+
+      <div id="bankConnected" style="display:none">
+        <div class="connected-bank">
+          <div class="bank-logo" id="bankLogo" style="width:44px;height:44px;border-radius:12px;background:var(--green);display:flex;align-items:center;justify-content:center;color:white;font-size:18px;font-weight:700;font-family:'Fraunces',serif;flex-shrink:0;">C</div>
+          <div class="bank-info">
+            <strong id="bankName">Chase Checking</strong>
+            <span id="bankAccount">••••4821 · Connected</span>
+          </div>
+          <span class="bank-status">● Live</span>
+        </div>
+        <button class="btn btn-outline" onclick="disconnectBank()">Disconnect bank</button>
+      </div>
+
+      <div id="bankNotConnected">
+        <div class="bank-connect-box">
+          <div class="icon">🏦</div>
+          <h3>Connect your bank</h3>
+          <p>Securely link your checking account. Givo will monitor it 24/7 for incoming deposits and automatically transfer your giving percentage.</p>
+          <button class="btn btn-primary" onclick="connectBank()">Connect bank account</button>
+        </div>
+        <div style="display:flex; gap:20px; justify-content:center; font-size:13px; color:var(--ink3);">
+          <span>🔒 256-bit encryption</span>
+          <span>🏦 7,000+ banks</span>
+          <span>✓ Read-only access</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RULES PANEL -->
+  <div class="panel" id="panel-rules">
+    <div class="card">
+      <div class="card-title">Your giving rules</div>
+      <div class="card-sub">Set your percentage and when transfers should trigger.</div>
+
+      <div class="alert alert-success" id="rulesSuccess"></div>
+      <div class="alert alert-error" id="rulesError"></div>
+
+      <div class="form-group">
+        <label>Giving percentage</label>
+        <div class="percent-row">
+          <div class="percent-big" id="percentDisplay">10%</div>
+          <input type="range" id="percentSlider" min="1" max="50" value="10" oninput="updatePercent(this.value)">
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--ink3); margin-top:6px;">
+          <span>1% (minimum)</span>
+          <span>10% = Maaser</span>
+          <span>20% = Chomesh</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Trigger when</label>
+        <div class="trigger-grid">
+          <button class="trigger-opt selected" id="trig-all" onclick="setTrigger('all', this)">
+            <strong>Every deposit</strong>
+            <span>Any money coming in</span>
+          </button>
+          <button class="trigger-opt" id="trig-zelle" onclick="setTrigger('zelle', this)">
+            <strong>Zelle only</strong>
+            <span>Peer-to-peer payments</span>
+          </button>
+          <button class="trigger-opt" id="trig-paycheck" onclick="setTrigger('paycheck', this)">
+            <strong>Paycheck only</strong>
+            <span>Direct deposits</span>
+          </button>
+          <button class="trigger-opt" id="trig-above" onclick="setTrigger('above', this)">
+            <strong>Above amount</strong>
+            <span>Large deposits only</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-group" id="minAmountRow" style="display:none">
+        <label>Minimum deposit amount ($)</label>
+        <input type="number" id="minAmount" placeholder="500" value="500" min="1">
+      </div>
+
+      <div class="form-group">
+        <label>Destination account</label>
+        <input type="text" id="destination" placeholder="Stripe connected account ID or bank account">
+        <div style="font-size:12px; color:var(--ink3); margin-top:6px;">This is where your maaser transfers will go. Enter your Stripe account ID or destination bank.</div>
+      </div>
+
+      <button class="btn btn-primary btn-full" id="saveRulesBtn" onclick="saveRules()">Save giving rules</button>
+    </div>
+  </div>
+
+  <!-- HISTORY PANEL -->
+  <div class="panel" id="panel-history">
+    <div class="card">
+      <div class="card-title">Transfer history</div>
+      <div class="card-sub">Every automatic maaser transfer Givo has made.</div>
+      <div class="tx-list" id="txList">
+        <div class="empty-state">
+          <div class="empty-icon">🌿</div>
+          <p>No transfers yet. Once you connect your bank and set your rules, transfers will appear here automatically.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS PANEL -->
+  <div class="panel" id="panel-settings">
+    <div class="card">
+      <div class="card-title">Account settings</div>
+      <div class="card-sub">Manage your Givo account.</div>
+
+      <div class="settings-section">
+        <div class="settings-label">Account</div>
+        <div class="settings-row">
+          <span class="sr-label">Email address</span>
+          <span class="sr-value" id="settingsEmail">—</span>
+        </div>
+        <div class="settings-row">
+          <span class="sr-label">Member since</span>
+          <span class="sr-value" id="settingsJoined">—</span>
+        </div>
+        <div class="settings-row">
+          <span class="sr-label">Plan</span>
+          <span class="sr-value">Free</span>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Notifications</div>
+        <div class="settings-row">
+          <div>
+            <div class="sr-label">Transfer notifications</div>
+            <div style="font-size:12px; color:var(--ink3);">Email when a transfer is made</div>
+          </div>
+          <span class="sr-value">Coming soon</span>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Danger zone</div>
+        <div class="settings-row">
+          <div>
+            <div class="sr-label">Sign out</div>
+            <div style="font-size:12px; color:var(--ink3);">Sign out of your account</div>
+          </div>
+          <button class="btn btn-outline" onclick="signOut()" style="padding:8px 18px; font-size:13px;">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TELLER CONNECT SCRIPT -->
+<script src="https://cdn.teller.io/connect/connect.js"></script>
+<script>
+const API = 'https://givo-backend-v2-production.up.railway.app';
+const TELLER_APP_ID = 'app_pq9heighb572k1h1sm000';
+
+let token = null;
+let user = null;
+let currentTrigger = 'all';
+
+// Auth check
+window.addEventListener('load', async () => {
+  token = localStorage.getItem('givo_token');
+  const userStr = localStorage.getItem('givo_user');
+  if (!token || !userStr) return window.location.href = '/login.html';
+  user = JSON.parse(userStr);
+  document.getElementById('navEmail').textContent = user.email;
+  document.getElementById('settingsEmail').textContent = user.email;
+  document.getElementById('settingsJoined').textContent = new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  loadDashboard();
+  loadHistory();
+});
+
+function showTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+}
+
+function updatePercent(val) {
+  document.getElementById('percentDisplay').textContent = val + '%';
+}
+
+function setTrigger(type, el) {
+  document.querySelectorAll('.trigger-opt').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  currentTrigger = type;
+  document.getElementById('minAmountRow').style.display = type === 'above' ? 'block' : 'none';
+}
+
+async function loadDashboard() {
+  try {
+    const res = await fetch(`${API}/api/dashboard`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.status === 401) return signOut();
+    const data = await res.json();
+    if (Array.isArray(data) && data.length > 0) {
+      const total = data.reduce((s, t) => s + (t.amount || 0), 0);
+      const now = new Date();
+      const thisMonth = data.filter(t => {
+        const d = new Date(t.created_at);
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      }).reduce((s, t) => s + (t.amount || 0), 0);
+      document.getElementById('stat-total').textContent = '$' + total.toFixed(2);
+      document.getElementById('stat-month').textContent = '$' + thisMonth.toFixed(2);
+      document.getElementById('statusBadge').className = 'status-badge badge-active';
+      document.getElementById('statusText').textContent = 'Active';
+    }
+  } catch (e) { console.error(e); }
+}
+
+async function loadHistory() {
+  try {
+    const res = await fetch(`${API}/api/dashboard`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    const list = document.getElementById('txList');
+    if (!Array.isArray(data) || data.length === 0) return;
+    list.innerHTML = data.map(t => `
+      <div class="tx-item">
+        <div class="tx-icon green">🌿</div>
+        <div class="tx-meta">
+          <strong>Auto-transfer</strong>
+          <span>${t.percentage}% · ${new Date(t.created_at).toLocaleDateString()}</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="tx-amount">$${Number(t.amount).toFixed(2)}</div>
+          <span class="tx-status">${t.status}</span>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) { console.error(e); }
+}
+
+async function saveRules() {
+  const percentage = parseInt(document.getElementById('percentSlider').value);
+  const destination = document.getElementById('destination').value.trim();
+  const btn = document.getElementById('saveRulesBtn');
+  const successEl = document.getElementById('rulesSuccess');
+  const errorEl = document.getElementById('rulesError');
+
+  successEl.style.display = 'none';
+  errorEl.style.display = 'none';
+
+  if (!destination) {
+    errorEl.textContent = 'Please enter a destination account.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  try {
+    const res = await fetch(`${API}/api/rules`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ percentage, trigger_type: currentTrigger, destination_account: destination })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to save');
+    successEl.textContent = '✓ Giving rules saved! Givo will now monitor your account.';
+    successEl.style.display = 'block';
+    document.getElementById('statusBadge').className = 'status-badge badge-active';
+    document.getElementById('statusText').textContent = 'Active';
+    document.getElementById('stat-rule').textContent = `${percentage}% on ${currentTrigger} deposits`;
+  } catch (err) {
+    errorEl.textContent = err.message;
+    errorEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save giving rules';
+  }
+}
+
+function connectBank() {
+  const tellerConnect = TellerConnect.setup({
+    applicationId: TELLER_APP_ID,
+    environment: 'sandbox',
+    onSuccess: function(enrollment) {
+      localStorage.setItem('givo_teller_token', enrollment.accessToken);
+      localStorage.setItem('givo_teller_account', JSON.stringify(enrollment));
+      document.getElementById('bankNotConnected').style.display = 'none';
+      document.getElementById('bankConnected').style.display = 'block';
+      document.getElementById('bankName').textContent = enrollment.institution.name + ' Checking';
+      document.getElementById('bankAccount').textContent = '••••' + Math.floor(1000 + Math.random() * 9000) + ' · Connected';
+    },
+    onExit: function() {}
+  });
+  tellerConnect.open();
+}
+
+function disconnectBank() {
+  localStorage.removeItem('givo_teller_token');
+  localStorage.removeItem('givo_teller_account');
+  document.getElementById('bankConnected').style.display = 'none';
+  document.getElementById('bankNotConnected').style.display = 'block';
+}
+
+function signOut() {
+  localStorage.removeItem('givo_token');
+  localStorage.removeItem('givo_user');
+  localStorage.removeItem('givo_teller_token');
+  window.location.href = '/login.html';
+}
+
+// Restore bank connection if saved
+window.addEventListener('load', () => {
+  const acct = localStorage.getItem('givo_teller_account');
+  if (acct) {
+    const enrollment = JSON.parse(acct);
+    document.getElementById('bankNotConnected').style.display = 'none';
+    document.getElementById('bankConnected').style.display = 'block';
+    document.getElementById('bankName').textContent = enrollment.institution?.name + ' Checking' || 'Bank Checking';
+    document.getElementById('bankAccount').textContent = '•••• · Connected';
+  }
+});
+</script>
+</body>
+</html>

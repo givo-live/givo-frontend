@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Givo — Create Account</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #FAFAF7; --ink: #1C1B18; --ink2: #5A5850; --ink3: #9A9890;
+  --green: #2A7A5A; --green-light: #E8F4EE; --border: rgba(28,27,24,0.1);
+  --border2: rgba(28,27,24,0.06); --r: 12px; --r-lg: 20px;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
+.logo { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 600; text-decoration: none; color: var(--ink); margin-bottom: 40px; }
+.logo span { color: var(--green); }
+.card { background: white; border: 1px solid var(--border); border-radius: var(--r-lg); padding: 40px; width: 100%; max-width: 420px; box-shadow: 0 4px 32px rgba(28,27,24,0.06); }
+h1 { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 300; margin-bottom: 8px; letter-spacing: -0.5px; }
+.subtitle { font-size: 15px; color: var(--ink2); font-weight: 300; margin-bottom: 32px; }
+.form-group { margin-bottom: 18px; }
+label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--ink2); }
+input { width: 100%; padding: 12px 16px; border: 1.5px solid var(--border); border-radius: var(--r); font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--ink); background: white; outline: none; transition: border-color 0.2s; }
+input:focus { border-color: var(--green); }
+.btn { width: 100%; padding: 14px; background: var(--green); color: white; border: none; border-radius: 100px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.2s; margin-top: 8px; }
+.btn:hover { background: #3A8A6A; transform: translateY(-1px); }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.divider { display: flex; align-items: center; gap: 12px; margin: 24px 0; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.divider span { font-size: 13px; color: var(--ink3); }
+.link-row { text-align: center; font-size: 14px; color: var(--ink2); }
+.link-row a { color: var(--green); font-weight: 500; text-decoration: none; }
+.error { background: #FEF2F2; border: 1px solid #FECACA; border-radius: var(--r); padding: 12px 16px; font-size: 14px; color: #DC2626; margin-bottom: 18px; display: none; }
+.success { background: var(--green-light); border: 1px solid rgba(42,122,90,0.2); border-radius: var(--r); padding: 12px 16px; font-size: 14px; color: var(--green); margin-bottom: 18px; display: none; }
+</style>
+</head>
+<body>
+<a href="/" class="logo">Givo<span>.</span></a>
+<div class="card">
+  <h1>Create your account</h1>
+  <p class="subtitle">Start giving automatically in minutes.</p>
+  <div class="error" id="error"></div>
+  <div class="success" id="success"></div>
+  <div class="form-group">
+    <label>Email address</label>
+    <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
+  </div>
+  <div class="form-group">
+    <label>Password</label>
+    <input type="password" id="password" placeholder="At least 8 characters" autocomplete="new-password">
+  </div>
+  <div class="form-group">
+    <label>Confirm password</label>
+    <input type="password" id="confirm" placeholder="Repeat your password" autocomplete="new-password">
+  </div>
+  <button class="btn" id="signupBtn" onclick="signup()">Create account</button>
+  <div class="divider"><span>or</span></div>
+  <div class="link-row">Already have an account? <a href="/login.html">Sign in</a></div>
+</div>
+
+<script>
+const API = 'https://givo-backend-v2-production.up.railway.app';
+
+async function signup() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const confirm = document.getElementById('confirm').value;
+  const btn = document.getElementById('signupBtn');
+  const errorEl = document.getElementById('error');
+  const successEl = document.getElementById('success');
+
+  errorEl.style.display = 'none';
+  successEl.style.display = 'none';
+
+  if (!email || !password) return showError('Please fill in all fields.');
+  if (password.length < 8) return showError('Password must be at least 8 characters.');
+  if (password !== confirm) return showError('Passwords do not match.');
+
+  btn.disabled = true;
+  btn.textContent = 'Creating account...';
+
+  try {
+    const res = await fetch(`${API}/api/auth/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) return showError(data.error || 'Something went wrong.');
+    successEl.textContent = '✓ Account created! Check your email to confirm, then sign in.';
+    successEl.style.display = 'block';
+    btn.textContent = 'Account created!';
+    setTimeout(() => window.location.href = '/login.html', 2000);
+  } catch (err) {
+    showError('Could not connect to server. Please try again.');
+  } finally {
+    btn.disabled = false;
+    if (btn.textContent === 'Creating account...') btn.textContent = 'Create account';
+  }
+}
+
+function showError(msg) {
+  const el = document.getElementById('error');
+  el.textContent = msg;
+  el.style.display = 'block';
+  document.getElementById('signupBtn').disabled = false;
+  document.getElementById('signupBtn').textContent = 'Create account';
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Enter') signup(); });
+</script>
+</body>
+</html>
