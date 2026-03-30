@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="refresh" content="0; url=/signup.html">
+<title>Givo</title>
+</head>
+<body>
+<script>
+  const token = localStorage.getItem('givo_token');
+  if (token) window.location.href = '/dashboard.html';
+  else window.location.href = '/signup.html';
+</script>
+</body>
+</html>
