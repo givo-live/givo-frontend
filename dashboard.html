@@ -451,7 +451,22 @@ async function restoreBankConnections() {
 await checkRulesSaved();
   } catch(e) { console.error('Failed to load banks:', e); }
 }
-
+async function checkRulesSaved() {
+  try {
+    var res = await fetch(API + '/api/rules', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!res.ok) return;
+    var data = await res.json();
+    if (data && data.length > 0) {
+      markStepDone('step3-icon');
+      var rule = data[0];
+      document.getElementById('statusBadge').className = 'status-badge badge-active';
+      document.getElementById('statusText').textContent = 'Active';
+      document.getElementById('stat-rule').textContent = rule.percentage + '% on ' + rule.trigger_type + ' deposits';
+    }
+  } catch(e) { console.error(e); }
+}
 async function saveRules() {
   var percentage = parseInt(document.getElementById('percentSlider').value);
   var destBank = localStorage.getItem('givo_destination_bank');
