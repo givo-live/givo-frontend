@@ -408,7 +408,7 @@ async function saveRules() {
     const res = await fetch(`${API}/api/rules`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ percentage, trigger_type: currentTrigger, destination_account: dest.token })
+      body: JSON.stringify({ percentage, trigger_type: currentTrigger, destination_account: dest.token, teller_account_id: localStorage.getItem('givo_source_bank') ? JSON.parse(localStorage.getItem('givo_source_bank')).token : null })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Failed to save');
