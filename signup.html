@@ -141,7 +141,7 @@ function showError(msg) {
 }
 
 function signInWithGoogle() {
-  window.location.href = `${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(window.location.origin + '/auth-callback.html')}`;
+  window.location.href = `${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent('https://www.givo.live/auth-callback.html')}`;
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Enter') signup(); });
