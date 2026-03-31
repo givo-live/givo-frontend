@@ -448,6 +448,7 @@ async function restoreBankConnections() {
       if (bank.bank_type === 'destination') showDestConnected(bank.bank_name);
     });
     if (banks.length >= 2) markStepDone('step2-icon');
+await checkRulesSaved();
   } catch(e) { console.error('Failed to load banks:', e); }
 }
 
