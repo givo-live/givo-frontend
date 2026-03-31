@@ -17,28 +17,40 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--i
 .logo span { color: var(--green); }
 .card { background: white; border: 1px solid var(--border); border-radius: var(--r-lg); padding: 40px; width: 100%; max-width: 420px; box-shadow: 0 4px 32px rgba(28,27,24,0.06); }
 h1 { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 300; margin-bottom: 8px; letter-spacing: -0.5px; }
-.subtitle { font-size: 15px; color: var(--ink2); font-weight: 300; margin-bottom: 32px; }
-.form-group { margin-bottom: 18px; }
+.subtitle { font-size: 15px; color: var(--ink2); font-weight: 300; margin-bottom: 28px; }
+.form-group { margin-bottom: 16px; }
 label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--ink2); }
 input { width: 100%; padding: 12px 16px; border: 1.5px solid var(--border); border-radius: var(--r); font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--ink); background: white; outline: none; transition: border-color 0.2s; }
 input:focus { border-color: var(--green); }
-.btn { width: 100%; padding: 14px; background: var(--green); color: white; border: none; border-radius: 100px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.2s; margin-top: 8px; }
-.btn:hover { background: #3A8A6A; transform: translateY(-1px); }
-.btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-.divider { display: flex; align-items: center; gap: 12px; margin: 24px 0; }
+.btn { width: 100%; padding: 14px; border-radius: 100px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.2s; border: none; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.btn-primary { background: var(--green); color: white; margin-top: 8px; }
+.btn-primary:hover { background: #3A8A6A; transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.btn-google { background: white; color: var(--ink); border: 1.5px solid var(--border); font-size: 14px; margin-bottom: 4px; }
+.btn-google:hover { background: var(--bg); border-color: rgba(28,27,24,0.2); }
+.divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
 .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 .divider span { font-size: 13px; color: var(--ink3); }
-.link-row { text-align: center; font-size: 14px; color: var(--ink2); }
+.link-row { text-align: center; font-size: 14px; color: var(--ink2); margin-top: 20px; }
 .link-row a { color: var(--green); font-weight: 500; text-decoration: none; }
-.error { background: #FEF2F2; border: 1px solid #FECACA; border-radius: var(--r); padding: 12px 16px; font-size: 14px; color: #DC2626; margin-bottom: 18px; display: none; }
+.error { background: #FEF2F2; border: 1px solid #FECACA; border-radius: var(--r); padding: 12px 16px; font-size: 14px; color: #DC2626; margin-bottom: 16px; display: none; }
 </style>
 </head>
 <body>
-<a href="/" class="logo">Givo<span>.</span></a>
+<a href="/index.html" class="logo">Givo<span>.</span></a>
 <div class="card">
   <h1>Welcome back</h1>
   <p class="subtitle">Sign in to your Givo account.</p>
+
+  <button class="btn btn-google" onclick="signInWithGoogle()">
+    <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+    Continue with Google
+  </button>
+
+  <div class="divider"><span>or sign in with email</span></div>
+
   <div class="error" id="error"></div>
+
   <div class="form-group">
     <label>Email address</label>
     <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
@@ -47,13 +59,14 @@ input:focus { border-color: var(--green); }
     <label>Password</label>
     <input type="password" id="password" placeholder="Your password" autocomplete="current-password">
   </div>
-  <button class="btn" id="loginBtn" onclick="login()">Sign in</button>
-  <div class="divider"><span>or</span></div>
-  <div class="link-row">Don't have an account? <a href="/signup.html">Create one</a></div>
+
+  <button class="btn btn-primary" id="loginBtn" onclick="login()">Sign in</button>
+  <div class="link-row">Don't have an account? <a href="/signup.html">Create one free</a></div>
 </div>
 
 <script>
 const API = 'https://givo-backend-v2-production.up.railway.app';
+const SUPABASE_URL = 'https://jhvlyzhphddripwipkqf.supabase.co';
 
 async function login() {
   const email = document.getElementById('email').value.trim();
@@ -74,7 +87,17 @@ async function login() {
       body: JSON.stringify({ email, password })
     });
     const data = await res.json();
-    if (!res.ok) return showError(data.error || 'Invalid email or password.');
+    if (!res.ok) {
+      const msg = (data.error || '').toLowerCase();
+      if (msg.includes('invalid') || msg.includes('wrong') || msg.includes('credentials') || msg.includes('password')) {
+        showError('Incorrect email or password. Please try again.');
+      } else if (msg.includes('confirmed') || msg.includes('verify')) {
+        showError('Please confirm your email address first. Check your inbox for a confirmation link.');
+      } else {
+        showError(data.error || 'Could not sign in. Please try again.');
+      }
+      return;
+    }
     localStorage.setItem('givo_token', data.session.access_token);
     localStorage.setItem('givo_user', JSON.stringify(data.user));
     window.location.href = '/dashboard.html';
@@ -88,10 +111,14 @@ async function login() {
 
 function showError(msg) {
   const el = document.getElementById('error');
-  el.textContent = msg;
+  el.innerHTML = msg;
   el.style.display = 'block';
   document.getElementById('loginBtn').disabled = false;
   document.getElementById('loginBtn').textContent = 'Sign in';
+}
+
+function signInWithGoogle() {
+  window.location.href = `${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(window.location.origin + '/dashboard.html')}`;
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
