@@ -13,8 +13,8 @@
   --r: 12px; --r-lg: 20px;
 }
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
-.logo { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 600; text-decoration: none; color: var(--ink); margin-bottom: 40px; }
-.logo span { color: var(--green); }
+.logo-wrap { margin-bottom: 40px; }
+.logo-wrap img { height: 48px; width: auto; }
 .card { background: white; border: 1px solid var(--border); border-radius: var(--r-lg); padding: 40px; width: 100%; max-width: 420px; box-shadow: 0 4px 32px rgba(28,27,24,0.06); }
 h1 { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 300; margin-bottom: 8px; letter-spacing: -0.5px; }
 .subtitle { font-size: 15px; color: var(--ink2); font-weight: 300; margin-bottom: 28px; }
@@ -40,7 +40,9 @@ input.error-field { border-color: #DC2626; }
 </style>
 </head>
 <body>
-<a href="/index.html" class="logo">Givo<span>.</span></a>
+<a href="/index.html" class="logo-wrap">
+  <img src="/logo.png" alt="Givo">
+</a>
 <div class="card">
   <h1>Create your account</h1>
   <p class="subtitle">Start giving automatically in minutes.</p>
@@ -108,7 +110,6 @@ async function signup() {
       body: JSON.stringify({ email, password })
     });
     const data = await res.json();
-
     if (!res.ok) {
       const msg = (data.error || '').toLowerCase();
       if (msg.includes('already') || msg.includes('registered') || msg.includes('exists') || msg.includes('taken') || msg.includes('duplicate')) {
@@ -121,26 +122,20 @@ async function signup() {
       }
       return;
     }
-
-    successEl.textContent = '✓ Account created! Check your email to confirm your account, then sign in.';
+    successEl.textContent = '✓ Account created! Check your email to confirm, then sign in.';
     successEl.style.display = 'block';
     btn.textContent = '✓ Check your email';
     setTimeout(() => window.location.href = '/login.html', 3000);
-
   } catch (err) {
-    showError('Could not connect to server. Please check your connection and try again.');
+    showError('Could not connect to server. Please try again.');
   } finally {
-    if (btn.textContent === 'Creating account...') {
-      btn.disabled = false;
-      btn.textContent = 'Create account';
-    }
+    if (btn.textContent === 'Creating account...') { btn.disabled = false; btn.textContent = 'Create account'; }
   }
 }
 
 function showError(msg) {
   const el = document.getElementById('error');
-  el.innerHTML = msg;
-  el.style.display = 'block';
+  el.innerHTML = msg; el.style.display = 'block';
   document.getElementById('signupBtn').disabled = false;
   document.getElementById('signupBtn').textContent = 'Create account';
 }
