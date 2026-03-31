@@ -364,6 +364,7 @@ function markStepDone(id) {
 
 function checkSetupComplete() {
   if (step2Done && step3Done) {
+    localStorage.setItem('givo_setup_complete', 'true');
     document.getElementById('gettingStartedCard').style.display = 'none';
     document.getElementById('recentTransfersCard').style.display = 'block';
   }
