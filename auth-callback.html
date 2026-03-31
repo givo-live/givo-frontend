@@ -22,48 +22,47 @@ img { height: 48px; width: auto; }
 <p class="message">Signing you in...</p>
 <div class="error" id="error">Something went wrong. <a href="/login.html" style="color:#DC2626;font-weight:600;">Try again →</a></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 const SUPABASE_URL = 'https://jhvlyzhphddripwipkqf.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impodmx5emhwaGRkcmlwd2lwa3FmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NTYxNjEsImV4cCI6MjA5MDAzMjE2MX0.e-RuMXMvJl-2slblxt2zf97JCGaxCADCj1ubRqbnXJw';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-
 async function handleCallback() {
   try {
-    // Supabase JS client automatically handles the hash/code exchange
-    const { data, error } = await supabase.auth.getSession();
+    // Parse both hash and query params
+    const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
+    const queryParams = new URLSearchParams(window.location.search);
 
-    if (error) throw error;
+    // Try to get access_token from hash first, then query
+    const accessToken = hashParams.get('access_token') || queryParams.get('access_token');
+    const refreshToken = hashParams.get('refresh_token') || queryParams.get('refresh_token');
 
-    if (data.session) {
-      // Session found — save and redirect
-      localStorage.setItem('givo_token', data.session.access_token);
-      localStorage.setItem('givo_user', JSON.stringify(data.session.user));
-      window.location.href = '/dashboard.html';
-      return;
+    if (accessToken) {
+      // Fetch user info using the token
+      const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'apikey': SUPABASE_ANON
+        }
+      });
+      const user = await res.json();
+
+      if (user && user.id) {
+        localStorage.setItem('givo_token', accessToken);
+        localStorage.setItem('givo_user', JSON.stringify(user));
+        window.location.replace('/dashboard.html');
+        return;
+      }
     }
 
-    // No session yet — listen for auth state change
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        localStorage.setItem('givo_token', session.access_token);
-        localStorage.setItem('givo_user', JSON.stringify(session.user));
-        window.location.href = '/dashboard.html';
-      } else if (event === 'SIGNED_OUT') {
-        window.location.href = '/login.html';
-      }
-    });
-
-    // Timeout fallback
+    // Show error after 5 seconds if nothing worked
     setTimeout(() => {
       document.querySelector('.spinner').style.display = 'none';
       document.querySelector('.message').style.display = 'none';
       document.getElementById('error').style.display = 'block';
-    }, 8000);
+    }, 5000);
 
   } catch (err) {
-    console.error('Auth callback error:', err);
+    console.error('Auth error:', err);
     document.querySelector('.spinner').style.display = 'none';
     document.querySelector('.message').style.display = 'none';
     document.getElementById('error').style.display = 'block';
