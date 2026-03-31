@@ -421,8 +421,13 @@ async function restoreBankConnections() {
       localStorage.setItem(`givo_${bank.bank_type}_bank`, JSON.stringify({ token: bank.teller_token, name: bank.bank_name }));
       if (bank.bank_type === 'source') showSourceConnected(bank.bank_name);
       if (bank.bank_type === 'destination') showDestConnected(bank.bank_name);
-    });
-  } catch(e) { console.error('Failed to load banks:', e); }
+    }} 
+  catch(e) { console.error('Failed to load banks:', e); }
+
+    if (banks.length >= 2) {
+      const icon = document.getElementById('step2-icon');
+      if (icon) { icon.style.background = 'var(--green)'; icon.style.color = 'white'; icon.textContent = '✓'; }
+    }
 }
 
 async function saveRules() {
