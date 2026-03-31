@@ -340,8 +340,10 @@ function connectSource() {
     applicationId: TELLER_APP_ID,
     environment: 'sandbox',
     onSuccess: function(enrollment) {
+      console.log('Full enrollment object:', JSON.stringify(enrollment));
       console.log('Teller enrollment:', enrollment);
-      const name = enrollment.institution ? enrollment.institution.name : 'Bank';
+      const name = (enrollment.institution && enrollment.institution.name) ? enrollment.institution.name : (enrollment.enrollmentId || 'Connected Bank');
+const token = enrollment.accessToken || enrollment.access_token || (enrollment.enrollment && enrollment.enrollment.accessToken) || JSON.stringify(enrollment);
       const token = enrollment.accessToken || enrollment.access_token || enrollment.token;
       localStorage.setItem('givo_source_bank', JSON.stringify({ token: token, name: name }));
       showSourceConnected(name);
@@ -361,8 +363,10 @@ function connectDest() {
     applicationId: TELLER_APP_ID,
     environment: 'sandbox',
     onSuccess: function(enrollment) {
+      console.log('Full enrollment object:', JSON.stringify(enrollment));
       console.log('Teller dest enrollment:', enrollment);
-      const name = enrollment.institution ? enrollment.institution.name : 'Bank';
+      const name = (enrollment.institution && enrollment.institution.name) ? enrollment.institution.name : (enrollment.enrollmentId || 'Connected Bank');
+const token = enrollment.accessToken || enrollment.access_token || (enrollment.enrollment && enrollment.enrollment.accessToken) || JSON.stringify(enrollment);
       const token = enrollment.accessToken || enrollment.access_token || enrollment.token;
       localStorage.setItem('givo_dest_bank', JSON.stringify({ token: token, name: name }));
       showDestConnected(name);
