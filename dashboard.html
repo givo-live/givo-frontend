@@ -94,7 +94,7 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22p
 .settings-row .sr-value { font-size: 14px; color: var(--ink2); }
 .dest-box { border: 2px dashed var(--border); border-radius: var(--r-lg); padding: 28px; text-align: center; }
 .dest-box p { font-size: 14px; color: var(--ink2); margin-bottom: 16px; font-weight: 300; }
-.step-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+.step-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; transition: all 0.3s; }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
 @media (max-width: 640px) {
   nav { padding: 0 16px; }
@@ -148,7 +148,9 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22p
         <div class="stat-sub" id="stat-rule">No rules configured</div>
       </div>
     </div>
-    <div class="card">
+
+    <!-- GETTING STARTED — shown until setup complete -->
+    <div class="card" id="gettingStartedCard">
       <div class="card-title">Getting started</div>
       <div class="card-sub">Complete these steps to start giving automatically.</div>
       <div style="display:flex;flex-direction:column;gap:12px;">
@@ -165,6 +167,18 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22p
           <div id="step3-icon" class="step-icon" style="background:var(--border);color:var(--ink3);">3</div>
           <div><strong style="font-size:14px;">Set your giving rules</strong><br><span style="font-size:12px;color:var(--ink2);">Percentage + trigger type</span></div>
           <span style="margin-left:auto;font-size:13px;color:var(--green);">→</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECENT TRANSFERS — shown after setup complete -->
+    <div class="card" id="recentTransfersCard" style="display:none;">
+      <div class="card-title">Recent transfers</div>
+      <div class="card-sub">Your latest automatic giving transfers.</div>
+      <div class="tx-list" id="overviewTxList">
+        <div class="empty-state">
+          <div class="empty-icon">🌿</div>
+          <p>No transfers yet. Givo is monitoring your account and will transfer automatically when a deposit arrives.</p>
         </div>
       </div>
     </div>
@@ -303,25 +317,26 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22p
 
 <script src="https://cdn.teller.io/connect/connect.js"></script>
 <script>
-const API = 'https://givo-backend-v2-production.up.railway.app';
-const TELLER_APP_ID = 'app_pq9heighb572k1h1sm000';
-let token = null, user = null, currentTrigger = 'all';
+var API = 'https://givo-backend-v2-production.up.railway.app';
+var TELLER_APP_ID = 'app_pq9heighb572k1h1sm000';
+var token = null, user = null, currentTrigger = 'all';
+var step2Done = false, step3Done = false;
 
-window.addEventListener('load', async () => {
+window.addEventListener('load', async function() {
   token = localStorage.getItem('givo_token');
-  const userStr = localStorage.getItem('givo_user');
+  var userStr = localStorage.getItem('givo_user');
   if (!token || !userStr) return window.location.href = '/login.html';
   user = JSON.parse(userStr);
   document.getElementById('navEmail').textContent = user.email;
   document.getElementById('settingsEmail').textContent = user.email;
   document.getElementById('settingsJoined').textContent = new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   await restoreBankConnections();
-  loadHistory();
+  await loadHistory();
 });
 
 function showTab(name, el) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
   el.classList.add('active');
   document.getElementById('panel-' + name).classList.add('active');
 }
@@ -329,29 +344,39 @@ function showTab(name, el) {
 function updatePercent(val) { document.getElementById('percentDisplay').textContent = val + '%'; }
 
 function setTrigger(type, el) {
-  document.querySelectorAll('.trigger-opt').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('.trigger-opt').forEach(function(b) { b.classList.remove('selected'); });
   el.classList.add('selected');
   currentTrigger = type;
   document.getElementById('minAmountRow').style.display = type === 'above' ? 'block' : 'none';
 }
 
 function markStepDone(id) {
-  const el = document.getElementById(id);
+  var el = document.getElementById(id);
   if (el) {
     el.style.background = 'var(--green)';
     el.style.color = 'white';
     el.textContent = '✓';
   }
+  if (id === 'step2-icon') step2Done = true;
+  if (id === 'step3-icon') step3Done = true;
+  checkSetupComplete();
+}
+
+function checkSetupComplete() {
+  if (step2Done && step3Done) {
+    document.getElementById('gettingStartedCard').style.display = 'none';
+    document.getElementById('recentTransfersCard').style.display = 'block';
+  }
 }
 
 function connectBank(type) {
-  const tellerConnect = TellerConnect.setup({
+  var tellerConnect = TellerConnect.setup({
     applicationId: TELLER_APP_ID,
     environment: 'sandbox',
     onSuccess: async function(enrollment) {
-      const data = enrollment.enrollment || enrollment;
-      const name = (data.institution && data.institution.name) ? data.institution.name : 'Connected Bank';
-      const tellerToken = data.accessToken || data.access_token || data.token || data.id;
+      var data = enrollment.enrollment || enrollment;
+      var name = (data.institution && data.institution.name) ? data.institution.name : 'Connected Bank';
+      var tellerToken = data.accessToken || data.access_token || data.token || data.id;
       localStorage.setItem('givo_' + type + '_bank', JSON.stringify({ token: tellerToken, name: name }));
       try {
         await fetch(API + '/api/banks', {
@@ -362,7 +387,7 @@ function connectBank(type) {
       } catch(e) { console.error('Failed to save bank:', e); }
       if (type === 'source') showSourceConnected(name);
       else showDestConnected(name);
-      checkStep2();
+      checkBothBanks();
     },
     onExit: function() {},
     onError: function(err) { console.error('Teller error:', err); }
@@ -370,9 +395,9 @@ function connectBank(type) {
   tellerConnect.open();
 }
 
-function checkStep2() {
-  const src = localStorage.getItem('givo_source_bank');
-  const dst = localStorage.getItem('givo_destination_bank');
+function checkBothBanks() {
+  var src = localStorage.getItem('givo_source_bank');
+  var dst = localStorage.getItem('givo_destination_bank');
   if (src && dst) markStepDone('step2-icon');
 }
 
@@ -408,16 +433,14 @@ function showDestConnected(name) {
 }
 
 async function restoreBankConnections() {
-  const src = localStorage.getItem('givo_source_bank');
-  const dst = localStorage.getItem('givo_destination_bank');
+  var src = localStorage.getItem('givo_source_bank');
+  var dst = localStorage.getItem('givo_destination_bank');
   if (src) showSourceConnected(JSON.parse(src).name);
   if (dst) showDestConnected(JSON.parse(dst).name);
   try {
-    const res = await fetch(API + '/api/banks', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
+    var res = await fetch(API + '/api/banks', { headers: { 'Authorization': 'Bearer ' + token } });
     if (!res.ok) return;
-    const banks = await res.json();
+    var banks = await res.json();
     if (!Array.isArray(banks)) return;
     banks.forEach(function(bank) {
       localStorage.setItem('givo_' + bank.bank_type + '_bank', JSON.stringify({ token: bank.teller_token, name: bank.bank_name }));
@@ -482,9 +505,11 @@ async function loadHistory() {
     }).reduce(function(s, t) { return s + (t.amount || 0); }, 0);
     document.getElementById('stat-total').textContent = '$' + total.toFixed(2);
     document.getElementById('stat-month').textContent = '$' + thisMonth.toFixed(2);
-    document.getElementById('txList').innerHTML = data.map(function(t) {
+    var txHtml = data.map(function(t) {
       return '<div class="tx-item"><div class="tx-icon">🌿</div><div class="tx-meta"><strong>Auto-transfer</strong><span>' + t.percentage + '% · ' + new Date(t.created_at).toLocaleDateString() + '</span></div><div style="display:flex;align-items:center;gap:10px;"><div class="tx-amount">$' + Number(t.amount).toFixed(2) + '</div><span class="tx-status">' + t.status + '</span></div></div>';
     }).join('');
+    document.getElementById('txList').innerHTML = txHtml;
+    document.getElementById('overviewTxList').innerHTML = txHtml;
   } catch(e) { console.error(e); }
 }
 
