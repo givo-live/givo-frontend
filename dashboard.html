@@ -17,7 +17,7 @@
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
 nav { background: white; border-bottom: 1px solid var(--border); padding: 0 40px; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
 .nav-logo { text-decoration: none; display: flex; align-items: center; }
-.nav-logo img { height: 36px; width: auto; }
+.nav-logo img { height: 52px; width: auto; }
 .nav-right { display: flex; align-items: center; gap: 20px; }
 .nav-email { font-size: 13px; color: var(--ink2); }
 .nav-signout { font-size: 13px; color: var(--ink3); cursor: pointer; background: none; border: none; font-family: 'DM Sans', sans-serif; transition: color 0.2s; }
@@ -94,6 +94,7 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22p
 .settings-row .sr-value { font-size: 14px; color: var(--ink2); }
 .dest-box { border: 2px dashed var(--border); border-radius: var(--r-lg); padding: 28px; text-align: center; }
 .dest-box p { font-size: 14px; color: var(--ink2); margin-bottom: 16px; font-weight: 300; }
+.step-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
 @media (max-width: 640px) {
   nav { padding: 0 16px; }
@@ -152,16 +153,16 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22p
       <div class="card-sub">Complete these steps to start giving automatically.</div>
       <div style="display:flex;flex-direction:column;gap:12px;">
         <div style="display:flex;align-items:center;gap:14px;padding:14px;background:var(--bg2);border-radius:var(--r);">
-          <div style="width:28px;height:28px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;">✓</div>
+          <div class="step-icon" style="background:var(--green);color:white;">✓</div>
           <div><strong style="font-size:14px;">Create your account</strong><br><span style="font-size:12px;color:var(--ink2);">Done</span></div>
         </div>
         <div style="display:flex;align-items:center;gap:14px;padding:14px;background:var(--bg2);border-radius:var(--r);cursor:pointer;" onclick="showTab('bank',document.querySelectorAll('.tab')[1])">
-          <div style="width:28px;height:28px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;color:var(--ink3);"id="step2-icon">2</div>
+          <div id="step2-icon" class="step-icon" style="background:var(--border);color:var(--ink3);">2</div>
           <div><strong style="font-size:14px;">Connect your banks</strong><br><span style="font-size:12px;color:var(--ink2);">Source + destination accounts</span></div>
           <span style="margin-left:auto;font-size:13px;color:var(--green);">→</span>
         </div>
         <div style="display:flex;align-items:center;gap:14px;padding:14px;background:var(--bg2);border-radius:var(--r);cursor:pointer;" onclick="showTab('rules',document.querySelectorAll('.tab')[2])">
-          <div style="width:28px;height:28px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;color:var(--ink3);"id="step3-icon">3</div>
+          <div id="step3-icon" class="step-icon" style="background:var(--border);color:var(--ink3);">3</div>
           <div><strong style="font-size:14px;">Set your giving rules</strong><br><span style="font-size:12px;color:var(--ink2);">Percentage + trigger type</span></div>
           <span style="margin-left:auto;font-size:13px;color:var(--green);">→</span>
         </div>
@@ -329,8 +330,18 @@ function updatePercent(val) { document.getElementById('percentDisplay').textCont
 
 function setTrigger(type, el) {
   document.querySelectorAll('.trigger-opt').forEach(b => b.classList.remove('selected'));
-  el.classList.add('selected'); currentTrigger = type;
+  el.classList.add('selected');
+  currentTrigger = type;
   document.getElementById('minAmountRow').style.display = type === 'above' ? 'block' : 'none';
+}
+
+function markStepDone(id) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.style.background = 'var(--green)';
+    el.style.color = 'white';
+    el.textContent = '✓';
+  }
 }
 
 function connectBank(type) {
@@ -338,26 +349,20 @@ function connectBank(type) {
     applicationId: TELLER_APP_ID,
     environment: 'sandbox',
     onSuccess: async function(enrollment) {
-      console.log('Full enrollment:', JSON.stringify(enrollment));
       const data = enrollment.enrollment || enrollment;
       const name = (data.institution && data.institution.name) ? data.institution.name : 'Connected Bank';
       const tellerToken = data.accessToken || data.access_token || data.token || data.id;
-      console.log('Name:', name, 'Token:', tellerToken);
-
-      // Save to localStorage
-      localStorage.setItem(`givo_${type}_bank`, JSON.stringify({ token: tellerToken, name: name }));
-
-      // Save to database
+      localStorage.setItem('givo_' + type + '_bank', JSON.stringify({ token: tellerToken, name: name }));
       try {
-        await fetch(`${API}/api/banks`, {
+        await fetch(API + '/api/banks', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
           body: JSON.stringify({ bank_type: type, teller_token: tellerToken, bank_name: name })
         });
       } catch(e) { console.error('Failed to save bank:', e); }
-
       if (type === 'source') showSourceConnected(name);
       else showDestConnected(name);
+      checkStep2();
     },
     onExit: function() {},
     onError: function(err) { console.error('Teller error:', err); }
@@ -365,14 +370,14 @@ function connectBank(type) {
   tellerConnect.open();
 }
 
+function checkStep2() {
+  const src = localStorage.getItem('givo_source_bank');
+  const dst = localStorage.getItem('givo_destination_bank');
+  if (src && dst) markStepDone('step2-icon');
+}
+
 async function disconnectBank(type) {
-  localStorage.removeItem(`givo_${type}_bank`);
-  try {
-    await fetch(`${API}/api/banks/${type}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-  } catch(e) {}
+  localStorage.removeItem('givo_' + type + '_bank');
   if (type === 'source') {
     document.getElementById('sourceBankConnected').style.display = 'none';
     document.getElementById('sourceBankNotConnected').style.display = 'block';
@@ -403,85 +408,84 @@ function showDestConnected(name) {
 }
 
 async function restoreBankConnections() {
-  // First restore from localStorage instantly
   const src = localStorage.getItem('givo_source_bank');
   const dst = localStorage.getItem('givo_destination_bank');
   if (src) showSourceConnected(JSON.parse(src).name);
   if (dst) showDestConnected(JSON.parse(dst).name);
-
-  // Then load from database
   try {
-    const res = await fetch(`${API}/api/banks`, {
-      headers: { 'Authorization': `Bearer ${token}` }
+    const res = await fetch(API + '/api/banks', {
+      headers: { 'Authorization': 'Bearer ' + token }
     });
     if (!res.ok) return;
     const banks = await res.json();
     if (!Array.isArray(banks)) return;
-    banks.forEach(bank => {
-      localStorage.setItem(`givo_${bank.bank_type}_bank`, JSON.stringify({ token: bank.teller_token, name: bank.bank_name }));
+    banks.forEach(function(bank) {
+      localStorage.setItem('givo_' + bank.bank_type + '_bank', JSON.stringify({ token: bank.teller_token, name: bank.bank_name }));
       if (bank.bank_type === 'source') showSourceConnected(bank.bank_name);
       if (bank.bank_type === 'destination') showDestConnected(bank.bank_name);
-    }} 
-  catch(e) { console.error('Failed to load banks:', e); }
-
-    if (banks.length >= 2) {
-      const icon = document.getElementById('step2-icon');
-      if (icon) { icon.style.background = 'var(--green)'; icon.style.color = 'white'; icon.textContent = '✓'; }
-    }
+    });
+    if (banks.length >= 2) markStepDone('step2-icon');
+  } catch(e) { console.error('Failed to load banks:', e); }
 }
 
 async function saveRules() {
-  const percentage = parseInt(document.getElementById('percentSlider').value);
-  const destBank = localStorage.getItem('givo_destination_bank');
-  const srcBank = localStorage.getItem('givo_source_bank');
-  const btn = document.getElementById('saveRulesBtn');
-  const successEl = document.getElementById('rulesSuccess');
-  const errorEl = document.getElementById('rulesError');
-  successEl.style.display = 'none'; errorEl.style.display = 'none';
-  if (!destBank) { errorEl.textContent = 'Please connect a destination account in the Bank tab first.'; errorEl.style.display = 'block'; return; }
-  const dest = JSON.parse(destBank);
-  const src = srcBank ? JSON.parse(srcBank) : null;
-  btn.disabled = true; btn.textContent = 'Saving...';
+  var percentage = parseInt(document.getElementById('percentSlider').value);
+  var destBank = localStorage.getItem('givo_destination_bank');
+  var srcBank = localStorage.getItem('givo_source_bank');
+  var btn = document.getElementById('saveRulesBtn');
+  var successEl = document.getElementById('rulesSuccess');
+  var errorEl = document.getElementById('rulesError');
+  successEl.style.display = 'none';
+  errorEl.style.display = 'none';
+  if (!destBank) {
+    errorEl.textContent = 'Please connect a destination account in the Bank tab first.';
+    errorEl.style.display = 'block';
+    return;
+  }
+  var dest = JSON.parse(destBank);
+  var src = srcBank ? JSON.parse(srcBank) : null;
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
   try {
-    const res = await fetch(`${API}/api/rules`, {
+    var res = await fetch(API + '/api/rules', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ percentage, trigger_type: currentTrigger, destination_account: dest.token, teller_account_id: src ? src.token : null })
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ percentage: percentage, trigger_type: currentTrigger, destination_account: dest.token, teller_account_id: src ? src.token : null })
     });
-    const data = await res.json();
+    var data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Failed to save');
-    successEl.textContent = '✓ Giving rules saved! Givo is now monitoring your account.'; const s3 = document.getElementById('step3-icon'); if (s3) { s3.style.background = 'var(--green)'; s3.style.color = 'white'; s3.textContent = '✓'; }
+    successEl.textContent = '✓ Giving rules saved! Givo is now monitoring your account.';
     successEl.style.display = 'block';
     document.getElementById('statusBadge').className = 'status-badge badge-active';
     document.getElementById('statusText').textContent = 'Active';
-    document.getElementById('stat-rule').textContent = `${percentage}% on ${currentTrigger} deposits`;
-  } catch (err) {
-    errorEl.textContent = err.message; errorEl.style.display = 'block';
+    document.getElementById('stat-rule').textContent = percentage + '% on ' + currentTrigger + ' deposits';
+    markStepDone('step3-icon');
+  } catch(err) {
+    errorEl.textContent = err.message;
+    errorEl.style.display = 'block';
   } finally {
-    btn.disabled = false; btn.textContent = 'Save giving rules';
+    btn.disabled = false;
+    btn.textContent = 'Save giving rules';
   }
 }
 
 async function loadHistory() {
   try {
-    const res = await fetch(`${API}/api/dashboard`, { headers: { 'Authorization': `Bearer ${token}` } });
-    const data = await res.json();
+    var res = await fetch(API + '/api/dashboard', { headers: { 'Authorization': 'Bearer ' + token } });
+    var data = await res.json();
     if (!Array.isArray(data) || data.length === 0) return;
-    const total = data.reduce((s, t) => s + (t.amount || 0), 0);
-    const now = new Date();
-    const thisMonth = data.filter(t => { const d = new Date(t.created_at); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); }).reduce((s, t) => s + (t.amount || 0), 0);
+    var total = data.reduce(function(s, t) { return s + (t.amount || 0); }, 0);
+    var now = new Date();
+    var thisMonth = data.filter(function(t) {
+      var d = new Date(t.created_at);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }).reduce(function(s, t) { return s + (t.amount || 0); }, 0);
     document.getElementById('stat-total').textContent = '$' + total.toFixed(2);
     document.getElementById('stat-month').textContent = '$' + thisMonth.toFixed(2);
-    document.getElementById('txList').innerHTML = data.map(t => `
-      <div class="tx-item">
-        <div class="tx-icon">🌿</div>
-        <div class="tx-meta"><strong>Auto-transfer</strong><span>${t.percentage}% · ${new Date(t.created_at).toLocaleDateString()}</span></div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div class="tx-amount">$${Number(t.amount).toFixed(2)}</div>
-          <span class="tx-status">${t.status}</span>
-        </div>
-      </div>`).join('');
-  } catch (e) { console.error(e); }
+    document.getElementById('txList').innerHTML = data.map(function(t) {
+      return '<div class="tx-item"><div class="tx-icon">🌿</div><div class="tx-meta"><strong>Auto-transfer</strong><span>' + t.percentage + '% · ' + new Date(t.created_at).toLocaleDateString() + '</span></div><div style="display:flex;align-items:center;gap:10px;"><div class="tx-amount">$' + Number(t.amount).toFixed(2) + '</div><span class="tx-status">' + t.status + '</span></div></div>';
+    }).join('');
+  } catch(e) { console.error(e); }
 }
 
 function signOut() { localStorage.clear(); window.location.href = '/login.html'; }
