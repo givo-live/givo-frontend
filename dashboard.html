@@ -336,23 +336,45 @@ function setTrigger(type, el) {
 }
 
 function connectSource() {
-  TellerConnect.setup({
-    applicationId: TELLER_APP_ID, environment: 'sandbox',
-    onSuccess: function(e) {
-      localStorage.setItem('givo_source_bank', JSON.stringify({ token: e.accessToken, name: e.institution.name }));
-      showSourceConnected(e.institution.name);
-    }, onExit: function() {}
-  }).open();
+  const tellerConnect = TellerConnect.setup({
+    applicationId: TELLER_APP_ID,
+    environment: 'sandbox',
+    onSuccess: function(enrollment) {
+      console.log('Teller enrollment:', enrollment);
+      const name = enrollment.institution ? enrollment.institution.name : 'Bank';
+      const token = enrollment.accessToken || enrollment.access_token || enrollment.token;
+      localStorage.setItem('givo_source_bank', JSON.stringify({ token: token, name: name }));
+      showSourceConnected(name);
+    },
+    onExit: function() {
+      console.log('Teller exited');
+    },
+    onError: function(err) {
+      console.error('Teller error:', err);
+    }
+  });
+  tellerConnect.open();
 }
 
 function connectDest() {
-  TellerConnect.setup({
-    applicationId: TELLER_APP_ID, environment: 'sandbox',
-    onSuccess: function(e) {
-      localStorage.setItem('givo_dest_bank', JSON.stringify({ token: e.accessToken, name: e.institution.name }));
-      showDestConnected(e.institution.name);
-    }, onExit: function() {}
-  }).open();
+  const tellerConnect = TellerConnect.setup({
+    applicationId: TELLER_APP_ID,
+    environment: 'sandbox',
+    onSuccess: function(enrollment) {
+      console.log('Teller dest enrollment:', enrollment);
+      const name = enrollment.institution ? enrollment.institution.name : 'Bank';
+      const token = enrollment.accessToken || enrollment.access_token || enrollment.token;
+      localStorage.setItem('givo_dest_bank', JSON.stringify({ token: token, name: name }));
+      showDestConnected(name);
+    },
+    onExit: function() {
+      console.log('Teller dest exited');
+    },
+    onError: function(err) {
+      console.error('Teller dest error:', err);
+    }
+  });
+  tellerConnect.open();
 }
 
 function showSourceConnected(name) {
