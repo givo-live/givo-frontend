@@ -450,7 +450,7 @@ async function saveRules() {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Failed to save');
-    successEl.textContent = '✓ Giving rules saved! Givo is now monitoring your account.';
+    successEl.textContent = '✓ Giving rules saved! Givo is now monitoring your account.'; const s3 = document.getElementById('step3-icon'); if (s3) { s3.style.background = 'var(--green)'; s3.style.color = 'white'; s3.textContent = '✓'; }
     successEl.style.display = 'block';
     document.getElementById('statusBadge').className = 'status-badge badge-active';
     document.getElementById('statusText').textContent = 'Active';
