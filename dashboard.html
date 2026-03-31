@@ -149,7 +149,7 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22p
       </div>
     </div>
 
-    <!-- GETTING STARTED — shown until setup complete -->
+    <!-- GETTING STARTED -->
     <div class="card" id="gettingStartedCard">
       <div class="card-title">Getting started</div>
       <div class="card-sub">Complete these steps to start giving automatically.</div>
@@ -171,7 +171,7 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22p
       </div>
     </div>
 
-    <!-- RECENT TRANSFERS — shown after setup complete -->
+    <!-- RECENT TRANSFERS -->
     <div class="card" id="recentTransfersCard" style="display:none;">
       <div class="card-title">Recent transfers</div>
       <div class="card-sub">Your latest automatic giving transfers.</div>
@@ -322,6 +322,14 @@ var TELLER_APP_ID = 'app_pq9heighb572k1h1sm000';
 var token = null, user = null, currentTrigger = 'all';
 var step2Done = false, step3Done = false;
 
+// INSTANT setup detection — runs before anything else
+(function() {
+  if (localStorage.getItem('givo_setup_complete') === 'true') {
+    document.getElementById('gettingStartedCard').style.display = 'none';
+    document.getElementById('recentTransfersCard').style.display = 'block';
+  }
+})();
+
 window.addEventListener('load', async function() {
   token = localStorage.getItem('givo_token');
   var userStr = localStorage.getItem('givo_user');
@@ -330,10 +338,8 @@ window.addEventListener('load', async function() {
   document.getElementById('navEmail').textContent = user.email;
   document.getElementById('settingsEmail').textContent = user.email;
   document.getElementById('settingsJoined').textContent = new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  await restoreBankConnections(); if (localStorage.getItem('givo_setup_complete') === 'true') {
-  document.getElementById('gettingStartedCard').style.display = 'none';
-  document.getElementById('recentTransfersCard').style.display = 'block';
-}
+  await restoreBankConnections();
+  await checkRulesSaved();
   await loadHistory();
 });
 
@@ -371,7 +377,7 @@ function checkSetupComplete() {
     document.getElementById('gettingStartedCard').style.display = 'none';
     document.getElementById('recentTransfersCard').style.display = 'block';
   }
-} 
+}
 
 function connectBank(type) {
   var tellerConnect = TellerConnect.setup({
@@ -452,14 +458,12 @@ async function restoreBankConnections() {
       if (bank.bank_type === 'destination') showDestConnected(bank.bank_name);
     });
     if (banks.length >= 2) markStepDone('step2-icon');
-await checkRulesSaved();
   } catch(e) { console.error('Failed to load banks:', e); }
 }
+
 async function checkRulesSaved() {
   try {
-    var res = await fetch(API + '/api/rules', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
+    var res = await fetch(API + '/api/rules', { headers: { 'Authorization': 'Bearer ' + token } });
     if (!res.ok) return;
     var data = await res.json();
     if (data && data.length > 0) {
@@ -471,6 +475,7 @@ async function checkRulesSaved() {
     }
   } catch(e) { console.error(e); }
 }
+
 async function saveRules() {
   var percentage = parseInt(document.getElementById('percentSlider').value);
   var destBank = localStorage.getItem('givo_destination_bank');
