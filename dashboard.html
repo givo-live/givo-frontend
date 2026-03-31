@@ -17,7 +17,7 @@
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
 nav { background: white; border-bottom: 1px solid var(--border); padding: 0 40px; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
 .nav-logo { text-decoration: none; display: flex; align-items: center; }
-.nav-logo img { height: 52px; width: auto; }
+.nav-logo img { height: 36px; width: auto; }
 .nav-right { display: flex; align-items: center; gap: 20px; }
 .nav-email { font-size: 13px; color: var(--ink2); }
 .nav-signout { font-size: 13px; color: var(--ink3); cursor: pointer; background: none; border: none; font-family: 'DM Sans', sans-serif; transition: color 0.2s; }
@@ -107,9 +107,7 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22p
 <body>
 
 <nav>
-  <a href="/index.html" class="nav-logo">
-    <img src="/logo.png" alt="Givo">
-  </a>
+  <a href="/index.html" class="nav-logo"><img src="/logo.png" alt="Givo"></a>
   <div class="nav-right">
     <span class="nav-email" id="navEmail"></span>
     <button class="nav-signout" onclick="signOut()">Sign out</button>
@@ -182,14 +180,14 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22p
           <div class="bank-info"><strong id="sourceBankName">Chase Checking</strong><span>Monitoring for deposits</span></div>
           <span class="bank-status">● Live</span>
         </div>
-        <button class="btn btn-outline" onclick="disconnectSource()">Disconnect</button>
+        <button class="btn btn-outline" onclick="disconnectBank('source')">Disconnect</button>
       </div>
       <div id="sourceBankNotConnected">
         <div class="bank-connect-box">
           <div class="icon">🏦</div>
           <h3>Connect your checking account</h3>
           <p>This is where your income arrives. Givo monitors it for deposits and triggers your giving transfer automatically.</p>
-          <button class="btn btn-primary" onclick="connectSource()">Connect source bank</button>
+          <button class="btn btn-primary" onclick="connectBank('source')">Connect source bank</button>
         </div>
         <div style="display:flex;gap:20px;justify-content:center;font-size:13px;color:var(--ink3);">
           <span>🔒 Bank-level encryption</span>
@@ -207,12 +205,12 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22p
           <div class="bank-info"><strong id="destBankName">Tzedakah Account</strong><span>Receives your transfers</span></div>
           <span style="font-size:12px;color:#4A7FA5;font-weight:500;">● Ready</span>
         </div>
-        <button class="btn btn-outline" onclick="disconnectDest()">Disconnect</button>
+        <button class="btn btn-outline" onclick="disconnectBank('destination')">Disconnect</button>
       </div>
       <div id="destBankNotConnected">
         <div class="dest-box">
           <p>Connect the account where your giving should be transferred — a tzedakah fund, a charity account, or your own giving account.</p>
-          <button class="btn btn-primary" onclick="connectDest()">Connect destination account</button>
+          <button class="btn btn-primary" onclick="connectBank('destination')">Connect destination account</button>
         </div>
       </div>
     </div>
@@ -316,7 +314,7 @@ window.addEventListener('load', async () => {
   document.getElementById('navEmail').textContent = user.email;
   document.getElementById('settingsEmail').textContent = user.email;
   document.getElementById('settingsJoined').textContent = new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  restoreBankConnections();
+  await restoreBankConnections();
   loadHistory();
 });
 
@@ -335,50 +333,57 @@ function setTrigger(type, el) {
   document.getElementById('minAmountRow').style.display = type === 'above' ? 'block' : 'none';
 }
 
-function connectSource() {
+function connectBank(type) {
   const tellerConnect = TellerConnect.setup({
     applicationId: TELLER_APP_ID,
     environment: 'sandbox',
-    onSuccess: function(enrollment) {
+    onSuccess: async function(enrollment) {
       console.log('Full enrollment:', JSON.stringify(enrollment));
       const data = enrollment.enrollment || enrollment;
       const name = (data.institution && data.institution.name) ? data.institution.name : 'Connected Bank';
-      const token = data.accessToken || data.access_token || data.token || data.id;
-      console.log('Name:', name, 'Token:', token);
-      localStorage.setItem('givo_source_bank', JSON.stringify({ token: token, name: name }));
-      showSourceConnected(name);
+      const tellerToken = data.accessToken || data.access_token || data.token || data.id;
+      console.log('Name:', name, 'Token:', tellerToken);
+
+      // Save to localStorage
+      localStorage.setItem(`givo_${type}_bank`, JSON.stringify({ token: tellerToken, name: name }));
+
+      // Save to database
+      try {
+        await fetch(`${API}/api/banks`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ bank_type: type, teller_token: tellerToken, bank_name: name })
+        });
+      } catch(e) { console.error('Failed to save bank:', e); }
+
+      if (type === 'source') showSourceConnected(name);
+      else showDestConnected(name);
     },
-    onExit: function() {
-      console.log('Teller exited');
-    },
-    onError: function(err) {
-      console.error('Teller error:', err);
-    }
+    onExit: function() {},
+    onError: function(err) { console.error('Teller error:', err); }
   });
   tellerConnect.open();
 }
-function connectDest() {
-  const tellerConnect = TellerConnect.setup({
-    applicationId: TELLER_APP_ID,
-    environment: 'sandbox',
-    onSuccess: function(enrollment) {
-      console.log('Full dest enrollment:', JSON.stringify(enrollment));
-      const data = enrollment.enrollment || enrollment;
-      const name = (data.institution && data.institution.name) ? data.institution.name : 'Connected Bank';
-      const token = data.accessToken || data.access_token || data.token || data.id;
-      console.log('Dest Name:', name, 'Dest Token:', token);
-      localStorage.setItem('givo_dest_bank', JSON.stringify({ token: token, name: name }));
-      showDestConnected(name);
-    },
-    onExit: function() {
-      console.log('Teller dest exited');
-    },
-    onError: function(err) {
-      console.error('Teller dest error:', err);
-    }
-  });
-  tellerConnect.open();
+
+async function disconnectBank(type) {
+  localStorage.removeItem(`givo_${type}_bank`);
+  try {
+    await fetch(`${API}/api/banks/${type}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+  } catch(e) {}
+  if (type === 'source') {
+    document.getElementById('sourceBankConnected').style.display = 'none';
+    document.getElementById('sourceBankNotConnected').style.display = 'block';
+  } else {
+    document.getElementById('destBankConnected').style.display = 'none';
+    document.getElementById('destBankNotConnected').style.display = 'block';
+    document.getElementById('rulesDestConnected').style.display = 'none';
+    document.getElementById('rulesDestNotConnected').style.display = 'block';
+  }
 }
+
 function showSourceConnected(name) {
   document.getElementById('sourceBankNotConnected').style.display = 'none';
   document.getElementById('sourceBankConnected').style.display = 'block';
@@ -397,42 +402,46 @@ function showDestConnected(name) {
   document.getElementById('rulesDestInitial').textContent = name.charAt(0).toUpperCase();
 }
 
-function disconnectSource() {
-  localStorage.removeItem('givo_source_bank');
-  document.getElementById('sourceBankConnected').style.display = 'none';
-  document.getElementById('sourceBankNotConnected').style.display = 'block';
-}
-
-function disconnectDest() {
-  localStorage.removeItem('givo_dest_bank');
-  document.getElementById('destBankConnected').style.display = 'none';
-  document.getElementById('destBankNotConnected').style.display = 'block';
-  document.getElementById('rulesDestConnected').style.display = 'none';
-  document.getElementById('rulesDestNotConnected').style.display = 'block';
-}
-
-function restoreBankConnections() {
+async function restoreBankConnections() {
+  // First restore from localStorage instantly
   const src = localStorage.getItem('givo_source_bank');
-  const dst = localStorage.getItem('givo_dest_bank');
+  const dst = localStorage.getItem('givo_destination_bank');
   if (src) showSourceConnected(JSON.parse(src).name);
   if (dst) showDestConnected(JSON.parse(dst).name);
+
+  // Then load from database
+  try {
+    const res = await fetch(`${API}/api/banks`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) return;
+    const banks = await res.json();
+    if (!Array.isArray(banks)) return;
+    banks.forEach(bank => {
+      localStorage.setItem(`givo_${bank.bank_type}_bank`, JSON.stringify({ token: bank.teller_token, name: bank.bank_name }));
+      if (bank.bank_type === 'source') showSourceConnected(bank.bank_name);
+      if (bank.bank_type === 'destination') showDestConnected(bank.bank_name);
+    });
+  } catch(e) { console.error('Failed to load banks:', e); }
 }
 
 async function saveRules() {
   const percentage = parseInt(document.getElementById('percentSlider').value);
-  const destBank = localStorage.getItem('givo_dest_bank');
+  const destBank = localStorage.getItem('givo_destination_bank');
+  const srcBank = localStorage.getItem('givo_source_bank');
   const btn = document.getElementById('saveRulesBtn');
   const successEl = document.getElementById('rulesSuccess');
   const errorEl = document.getElementById('rulesError');
   successEl.style.display = 'none'; errorEl.style.display = 'none';
   if (!destBank) { errorEl.textContent = 'Please connect a destination account in the Bank tab first.'; errorEl.style.display = 'block'; return; }
   const dest = JSON.parse(destBank);
+  const src = srcBank ? JSON.parse(srcBank) : null;
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
     const res = await fetch(`${API}/api/rules`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ percentage, trigger_type: currentTrigger, destination_account: dest.token, teller_account_id: localStorage.getItem('givo_source_bank') ? JSON.parse(localStorage.getItem('givo_source_bank')).token : null })
+      body: JSON.stringify({ percentage, trigger_type: currentTrigger, destination_account: dest.token, teller_account_id: src ? src.token : null })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Failed to save');
