@@ -16,8 +16,8 @@
 }
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
 nav { background: white; border-bottom: 1px solid var(--border); padding: 0 40px; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
-.nav-logo { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; color: var(--ink); text-decoration: none; }
-.nav-logo span { color: var(--green); }
+.nav-logo { text-decoration: none; display: flex; align-items: center; }
+.nav-logo img { height: 36px; width: auto; }
 .nav-right { display: flex; align-items: center; gap: 20px; }
 .nav-email { font-size: 13px; color: var(--ink2); }
 .nav-signout { font-size: 13px; color: var(--ink3); cursor: pointer; background: none; border: none; font-family: 'DM Sans', sans-serif; transition: color 0.2s; }
@@ -107,7 +107,9 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22p
 <body>
 
 <nav>
-  <a href="/index.html" class="nav-logo">Givo<span>.</span></a>
+  <a href="/index.html" class="nav-logo">
+    <img src="/logo.png" alt="Givo">
+  </a>
   <div class="nav-right">
     <span class="nav-email" id="navEmail"></span>
     <button class="nav-signout" onclick="signOut()">Sign out</button>
@@ -177,10 +179,7 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22p
       <div id="sourceBankConnected" style="display:none">
         <div class="connected-bank">
           <div style="width:44px;height:44px;border-radius:12px;background:var(--green);display:flex;align-items:center;justify-content:center;color:white;font-size:18px;font-weight:700;font-family:'Fraunces',serif;flex-shrink:0;" id="sourceBankInitial">C</div>
-          <div class="bank-info">
-            <strong id="sourceBankName">Chase Checking</strong>
-            <span>Monitoring for deposits</span>
-          </div>
+          <div class="bank-info"><strong id="sourceBankName">Chase Checking</strong><span>Monitoring for deposits</span></div>
           <span class="bank-status">● Live</span>
         </div>
         <button class="btn btn-outline" onclick="disconnectSource()">Disconnect</button>
@@ -189,7 +188,7 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22p
         <div class="bank-connect-box">
           <div class="icon">🏦</div>
           <h3>Connect your checking account</h3>
-          <p>This is where your income arrives. Givo monitors it for deposits and triggers your maaser transfer automatically.</p>
+          <p>This is where your income arrives. Givo monitors it for deposits and triggers your giving transfer automatically.</p>
           <button class="btn btn-primary" onclick="connectSource()">Connect source bank</button>
         </div>
         <div style="display:flex;gap:20px;justify-content:center;font-size:13px;color:var(--ink3);">
@@ -199,24 +198,20 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22p
         </div>
       </div>
     </div>
-
     <div class="card">
       <div class="card-title">Destination account</div>
-      <div class="card-sub">Your maaser transfers are sent here automatically.</div>
+      <div class="card-sub">Your giving transfers are sent here automatically.</div>
       <div id="destBankConnected" style="display:none">
         <div class="connected-bank" style="background:rgba(74,127,165,0.08);border-color:rgba(74,127,165,0.2);">
           <div style="width:44px;height:44px;border-radius:12px;background:#4A7FA5;display:flex;align-items:center;justify-content:center;color:white;font-size:18px;font-weight:700;font-family:'Fraunces',serif;flex-shrink:0;" id="destBankInitial">T</div>
-          <div class="bank-info">
-            <strong id="destBankName">Tzedakah Account</strong>
-            <span>Receives your maaser transfers</span>
-          </div>
+          <div class="bank-info"><strong id="destBankName">Tzedakah Account</strong><span>Receives your transfers</span></div>
           <span style="font-size:12px;color:#4A7FA5;font-weight:500;">● Ready</span>
         </div>
         <button class="btn btn-outline" onclick="disconnectDest()">Disconnect</button>
       </div>
       <div id="destBankNotConnected">
         <div class="dest-box">
-          <p>Connect the account where your maaser should be transferred — a tzedakah fund, a charity's bank account, or your own giving account.</p>
+          <p>Connect the account where your giving should be transferred — a tzedakah fund, a charity account, or your own giving account.</p>
           <button class="btn btn-primary" onclick="connectDest()">Connect destination account</button>
         </div>
       </div>
@@ -243,18 +238,10 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22p
       <div class="form-group">
         <label>Trigger when</label>
         <div class="trigger-grid">
-          <button class="trigger-opt selected" id="trig-all" onclick="setTrigger('all',this)">
-            <strong>Every deposit</strong><span>Any money coming in</span>
-          </button>
-          <button class="trigger-opt" id="trig-zelle" onclick="setTrigger('zelle',this)">
-            <strong>Zelle only</strong><span>Peer-to-peer payments</span>
-          </button>
-          <button class="trigger-opt" id="trig-paycheck" onclick="setTrigger('paycheck',this)">
-            <strong>Paycheck only</strong><span>Direct deposits</span>
-          </button>
-          <button class="trigger-opt" id="trig-above" onclick="setTrigger('above',this)">
-            <strong>Above amount</strong><span>Large deposits only</span>
-          </button>
+          <button class="trigger-opt selected" id="trig-all" onclick="setTrigger('all',this)"><strong>Every deposit</strong><span>Any money coming in</span></button>
+          <button class="trigger-opt" id="trig-zelle" onclick="setTrigger('zelle',this)"><strong>Zelle only</strong><span>Peer-to-peer payments</span></button>
+          <button class="trigger-opt" id="trig-paycheck" onclick="setTrigger('paycheck',this)"><strong>Paycheck only</strong><span>Direct deposits</span></button>
+          <button class="trigger-opt" id="trig-above" onclick="setTrigger('above',this)"><strong>Above amount</strong><span>Large deposits only</span></button>
         </div>
       </div>
       <div class="form-group" id="minAmountRow" style="display:none">
@@ -266,10 +253,7 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22p
         <div id="rulesDestConnected" style="display:none">
           <div class="connected-bank" style="margin-bottom:0;background:rgba(74,127,165,0.08);border-color:rgba(74,127,165,0.2);">
             <div style="width:36px;height:36px;border-radius:10px;background:#4A7FA5;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:700;flex-shrink:0;" id="rulesDestInitial">T</div>
-            <div class="bank-info">
-              <strong id="rulesDestName">Tzedakah Account</strong>
-              <span>Transfers go here</span>
-            </div>
+            <div class="bank-info"><strong id="rulesDestName">Tzedakah Account</strong><span>Transfers go here</span></div>
           </div>
         </div>
         <div id="rulesDestNotConnected">
@@ -286,7 +270,7 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22p
   <div class="panel" id="panel-history">
     <div class="card">
       <div class="card-title">Transfer history</div>
-      <div class="card-sub">Every automatic maaser transfer Givo has made.</div>
+      <div class="card-sub">Every automatic giving transfer Givo has made.</div>
       <div class="tx-list" id="txList">
         <div class="empty-state">
           <div class="empty-icon">🌿</div>
@@ -347,8 +331,7 @@ function updatePercent(val) { document.getElementById('percentDisplay').textCont
 
 function setTrigger(type, el) {
   document.querySelectorAll('.trigger-opt').forEach(b => b.classList.remove('selected'));
-  el.classList.add('selected');
-  currentTrigger = type;
+  el.classList.add('selected'); currentTrigger = type;
   document.getElementById('minAmountRow').style.display = type === 'above' ? 'block' : 'none';
 }
 
