@@ -330,7 +330,10 @@ window.addEventListener('load', async function() {
   document.getElementById('navEmail').textContent = user.email;
   document.getElementById('settingsEmail').textContent = user.email;
   document.getElementById('settingsJoined').textContent = new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  await restoreBankConnections();
+  await restoreBankConnections(); if (localStorage.getItem('givo_setup_complete') === 'true') {
+  document.getElementById('gettingStartedCard').style.display = 'none';
+  document.getElementById('recentTransfersCard').style.display = 'block';
+}
   await loadHistory();
 });
 
