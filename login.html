@@ -13,8 +13,8 @@
   --r: 12px; --r-lg: 20px;
 }
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
-.logo { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 600; text-decoration: none; color: var(--ink); margin-bottom: 40px; }
-.logo span { color: var(--green); }
+.logo-wrap { margin-bottom: 40px; }
+.logo-wrap img { height: 48px; width: auto; }
 .card { background: white; border: 1px solid var(--border); border-radius: var(--r-lg); padding: 40px; width: 100%; max-width: 420px; box-shadow: 0 4px 32px rgba(28,27,24,0.06); }
 h1 { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 300; margin-bottom: 8px; letter-spacing: -0.5px; }
 .subtitle { font-size: 15px; color: var(--ink2); font-weight: 300; margin-bottom: 28px; }
@@ -37,7 +37,9 @@ input:focus { border-color: var(--green); }
 </style>
 </head>
 <body>
-<a href="/index.html" class="logo">Givo<span>.</span></a>
+<a href="/index.html" class="logo-wrap">
+  <img src="/logo.png" alt="Givo">
+</a>
 <div class="card">
   <h1>Welcome back</h1>
   <p class="subtitle">Sign in to your Givo account.</p>
@@ -92,7 +94,7 @@ async function login() {
       if (msg.includes('invalid') || msg.includes('wrong') || msg.includes('credentials') || msg.includes('password')) {
         showError('Incorrect email or password. Please try again.');
       } else if (msg.includes('confirmed') || msg.includes('verify')) {
-        showError('Please confirm your email address first. Check your inbox for a confirmation link.');
+        showError('Please confirm your email address first. Check your inbox.');
       } else {
         showError(data.error || 'Could not sign in. Please try again.');
       }
@@ -111,8 +113,7 @@ async function login() {
 
 function showError(msg) {
   const el = document.getElementById('error');
-  el.innerHTML = msg;
-  el.style.display = 'block';
+  el.innerHTML = msg; el.style.display = 'block';
   document.getElementById('loginBtn').disabled = false;
   document.getElementById('loginBtn').textContent = 'Sign in';
 }
