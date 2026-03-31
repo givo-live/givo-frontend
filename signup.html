@@ -112,7 +112,18 @@ async function signup() {
     const data = await res.json();
     if (!res.ok) {
       const msg = (data.error || '').toLowerCase();
-      if (msg.includes('already') || msg.includes('registered') || msg.includes('exists') || msg.includes('taken') || msg.includes('duplicate')) {
+      const isExisting = 
+        msg.includes('already') || 
+        msg.includes('registered') || 
+        msg.includes('exists') || 
+        msg.includes('taken') || 
+        msg.includes('duplicate') ||
+        msg.includes('user already registered') ||
+        data.code === 'user_already_exists' ||
+        res.status === 422 ||
+        res.status === 400;
+      
+      if (isExisting) {
         emailInput.classList.add('error-field');
         emailHint.textContent = 'This email is already registered.';
         emailHint.style.display = 'block';
