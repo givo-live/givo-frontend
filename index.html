@@ -2,14 +2,269 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="refresh" content="0; url=/signup.html">
-<title>Givo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Givo — Automate Your Giving</title>
+<meta name="description" content="Givo automatically transfers a percentage of every deposit to your giving account. Set it once, give forever.">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #FAFAF7; --bg2: #F2F0EB;
+  --ink: #1C1B18; --ink2: #5A5850; --ink3: #9A9890;
+  --green: #2A7A5A; --green-light: #E8F4EE; --green-mid: #4A9A78;
+  --border: rgba(28,27,24,0.1);
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); line-height: 1.6; }
+
+/* NAV */
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(250,250,247,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; }
+.nav-logo img { height: 44px; width: auto; }
+.nav-links { display: flex; align-items: center; gap: 32px; }
+.nav-links a { font-size: 14px; color: var(--ink2); text-decoration: none; transition: color 0.2s; }
+.nav-links a:hover { color: var(--ink); }
+.nav-cta { background: var(--green); color: white !important; padding: 8px 20px; border-radius: 100px; font-weight: 500; }
+.nav-cta:hover { background: var(--green-mid) !important; }
+
+/* HERO */
+.hero { padding: 160px 24px 100px; text-align: center; max-width: 800px; margin: 0 auto; }
+.hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--green-light); color: var(--green); padding: 6px 16px; border-radius: 100px; font-size: 13px; font-weight: 500; margin-bottom: 32px; }
+.hero-badge::before { content: '●'; font-size: 8px; animation: pulse 2s infinite; }
+.hero h1 { font-family: 'Fraunces', serif; font-size: clamp(42px, 7vw, 72px); font-weight: 300; line-height: 1.1; letter-spacing: -2px; margin-bottom: 24px; }
+.hero h1 em { font-style: italic; color: var(--green); }
+.hero p { font-size: clamp(16px, 2.5vw, 20px); color: var(--ink2); font-weight: 300; max-width: 560px; margin: 0 auto 40px; line-height: 1.7; }
+.hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.btn-primary { background: var(--green); color: white; padding: 14px 32px; border-radius: 100px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; text-decoration: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+.btn-primary:hover { background: var(--green-mid); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(42,122,90,0.25); }
+.btn-secondary { background: white; color: var(--ink); padding: 14px 32px; border-radius: 100px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; text-decoration: none; border: 1.5px solid var(--border); transition: all 0.2s; }
+.btn-secondary:hover { border-color: rgba(28,27,24,0.25); transform: translateY(-2px); }
+.hero-note { margin-top: 20px; font-size: 13px; color: var(--ink3); }
+
+/* DEMO CARD */
+.demo-section { padding: 0 24px 100px; display: flex; justify-content: center; }
+.demo-card { background: white; border: 1px solid var(--border); border-radius: 24px; padding: 32px; max-width: 480px; width: 100%; box-shadow: 0 24px 80px rgba(28,27,24,0.08); }
+.demo-title { font-size: 12px; font-weight: 500; color: var(--ink3); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 20px; }
+.demo-deposit { display: flex; align-items: center; justify-content: space-between; padding: 16px; background: var(--bg2); border-radius: 12px; margin-bottom: 12px; }
+.demo-deposit-left { display: flex; align-items: center; gap: 12px; }
+.demo-deposit-icon { width: 40px; height: 40px; border-radius: 12px; background: var(--green-light); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.demo-deposit-label { font-size: 14px; font-weight: 500; }
+.demo-deposit-sub { font-size: 12px; color: var(--ink3); }
+.demo-deposit-amount { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 400; color: var(--ink); }
+.demo-arrow { text-align: center; font-size: 20px; margin: 8px 0; color: var(--green); }
+.demo-transfer { display: flex; align-items: center; justify-content: space-between; padding: 16px; background: var(--green-light); border: 1px solid rgba(42,122,90,0.2); border-radius: 12px; }
+.demo-transfer-amount { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 400; color: var(--green); }
+.demo-rule { text-align: center; margin-top: 16px; font-size: 13px; color: var(--ink2); }
+.demo-rule strong { color: var(--green); }
+
+/* HOW IT WORKS */
+.section { padding: 80px 24px; max-width: 1000px; margin: 0 auto; }
+.section-label { font-size: 12px; font-weight: 500; color: var(--green); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; text-align: center; }
+.section-title { font-family: 'Fraunces', serif; font-size: clamp(32px, 5vw, 48px); font-weight: 300; text-align: center; letter-spacing: -1px; margin-bottom: 16px; }
+.section-sub { font-size: 17px; color: var(--ink2); text-align: center; font-weight: 300; max-width: 560px; margin: 0 auto 60px; }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.step { background: white; border: 1px solid var(--border); border-radius: 20px; padding: 28px; }
+.step-num { width: 36px; height: 36px; border-radius: 50%; background: var(--green-light); color: var(--green); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+.step h3 { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 400; margin-bottom: 8px; }
+.step p { font-size: 14px; color: var(--ink2); font-weight: 300; line-height: 1.7; }
+
+/* FEATURES */
+.features { background: var(--bg2); padding: 80px 24px; }
+.features-inner { max-width: 1000px; margin: 0 auto; }
+.features-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 60px; }
+.feature { background: white; border: 1px solid var(--border); border-radius: 20px; padding: 28px; }
+.feature-icon { font-size: 28px; margin-bottom: 14px; }
+.feature h3 { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 400; margin-bottom: 8px; }
+.feature p { font-size: 14px; color: var(--ink2); font-weight: 300; line-height: 1.7; }
+
+/* MAASER SECTION */
+.maaser { padding: 80px 24px; max-width: 800px; margin: 0 auto; text-align: center; }
+.maaser-quote { font-family: 'Fraunces', serif; font-size: clamp(22px, 4vw, 32px); font-weight: 300; font-style: italic; line-height: 1.5; color: var(--ink); margin-bottom: 16px; letter-spacing: -0.5px; }
+.maaser-source { font-size: 14px; color: var(--ink3); margin-bottom: 40px; }
+.maaser p { font-size: 17px; color: var(--ink2); font-weight: 300; line-height: 1.8; }
+
+/* PRICING */
+.pricing { background: var(--bg2); padding: 80px 24px; }
+.pricing-inner { max-width: 500px; margin: 0 auto; }
+.pricing-card { background: white; border: 2px solid var(--green); border-radius: 24px; padding: 40px; text-align: center; box-shadow: 0 16px 48px rgba(42,122,90,0.1); }
+.pricing-badge { display: inline-block; background: var(--green-light); color: var(--green); font-size: 12px; font-weight: 600; padding: 4px 14px; border-radius: 100px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
+.pricing-price { font-family: 'Fraunces', serif; font-size: 64px; font-weight: 300; color: var(--ink); line-height: 1; letter-spacing: -2px; margin-bottom: 4px; }
+.pricing-price span { font-size: 24px; vertical-align: top; margin-top: 12px; display: inline-block; }
+.pricing-period { font-size: 16px; color: var(--ink2); margin-bottom: 32px; }
+.pricing-features { text-align: left; margin-bottom: 32px; display: flex; flex-direction: column; gap: 12px; }
+.pricing-feature { display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--ink2); }
+.pricing-feature::before { content: '✓'; color: var(--green); font-weight: 600; flex-shrink: 0; }
+.pricing-trial { font-size: 13px; color: var(--ink3); margin-top: 16px; }
+
+/* FOOTER */
+footer { padding: 48px 40px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
+.footer-logo img { height: 36px; width: auto; }
+.footer-links { display: flex; gap: 24px; }
+.footer-links a { font-size: 13px; color: var(--ink3); text-decoration: none; transition: color 0.2s; }
+.footer-links a:hover { color: var(--ink); }
+.footer-copy { font-size: 13px; color: var(--ink3); }
+
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+@media (max-width: 768px) {
+  nav { padding: 0 20px; }
+  .nav-links { display: none; }
+  .steps { grid-template-columns: 1fr; }
+  .features-grid { grid-template-columns: 1fr; }
+  footer { flex-direction: column; text-align: center; padding: 32px 24px; }
+  .footer-links { justify-content: center; }
+}
+</style>
 </head>
 <body>
+
+<!-- NAV -->
+<nav>
+  <a href="/"><img src="/logo.png" alt="Givo"></a>
+  <div class="nav-links">
+    <a href="#how-it-works">How it works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="/login.html">Sign in</a>
+    <a href="/signup.html" class="nav-cta">Start free trial</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">Now live — try free for 30 days</div>
+  <h1>Give automatically,<br><em>every time you earn.</em></h1>
+  <p>Givo monitors your bank account and automatically transfers your giving percentage the moment a deposit arrives. Set it once. Never forget again.</p>
+  <div class="hero-cta">
+    <a href="/signup.html" class="btn-primary">Start giving automatically →</a>
+    <a href="#how-it-works" class="btn-secondary">See how it works</a>
+  </div>
+  <p class="hero-note">30-day free trial · No credit card required · Cancel anytime</p>
+</section>
+
+<!-- DEMO CARD -->
+<div class="demo-section">
+  <div class="demo-card">
+    <div class="demo-title">How Givo works</div>
+    <div class="demo-deposit">
+      <div class="demo-deposit-left">
+        <div class="demo-deposit-icon">💰</div>
+        <div>
+          <div class="demo-deposit-label">Direct deposit received</div>
+          <div class="demo-deposit-sub">Chase Checking · Just now</div>
+        </div>
+      </div>
+      <div class="demo-deposit-amount">+$3,000</div>
+    </div>
+    <div class="demo-arrow">↓</div>
+    <div class="demo-transfer">
+      <div class="demo-deposit-left">
+        <div class="demo-deposit-icon">🌿</div>
+        <div>
+          <div class="demo-deposit-label" style="color:var(--green)">Auto-transfer sent</div>
+          <div class="demo-deposit-sub">Tzedakah account · Instantly</div>
+        </div>
+      </div>
+      <div class="demo-transfer-amount">$300</div>
+    </div>
+    <div class="demo-rule">Triggered by your rule: <strong>10% of every deposit</strong></div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how-it-works">
+  <div class="section-label">Simple setup</div>
+  <h2 class="section-title">Three steps to automatic giving</h2>
+  <p class="section-sub">Get set up in under 5 minutes. Givo does the rest forever.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>Connect your banks</h3>
+      <p>Securely link your income account and your giving account. Givo uses bank-level encryption and read-only access to monitor deposits.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>Set your percentage</h3>
+      <p>Choose how much to give — 10% for maaser, 20% for chomesh, or any amount you choose. Set your trigger: every deposit, paycheck only, or Zelle only.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>Give automatically</h3>
+      <p>Every time money comes in, Givo instantly calculates and transfers your giving amount. No manual transfers. No forgetting. Ever.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<div class="features">
+  <div class="features-inner">
+    <div class="section-label">Built right</div>
+    <h2 class="section-title">Everything you need, nothing you don't</h2>
+    <div class="features-grid">
+      <div class="feature">
+        <div class="feature-icon">🏦</div>
+        <h3>7,000+ banks supported</h3>
+        <p>Connect any US bank account — Chase, Bank of America, Wells Fargo, credit unions, and thousands more.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">⚡</div>
+        <h3>Instant detection</h3>
+        <p>Givo monitors your account 24/7 and triggers your transfer the moment a deposit lands — no delays, no polling.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🔒</div>
+        <h3>Bank-level security</h3>
+        <p>256-bit encryption, read-only bank access, and we never store your login credentials. Your money is always safe.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📊</div>
+        <h3>Full transfer history</h3>
+        <p>See every automatic transfer Givo has ever made for you. Track your giving over time and stay accountable.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRICING -->
+<div class="pricing" id="pricing">
+  <div class="pricing-inner">
+    <div class="section-label" style="text-align:center;margin-bottom:16px;">Simple pricing</div>
+    <h2 class="section-title">One plan, everything included</h2>
+    <p class="section-sub" style="margin-bottom:40px;">Less than a cup of coffee. More peace of mind than you can imagine.</p>
+    <div class="pricing-card">
+      <div class="pricing-badge">Most popular</div>
+      <div class="pricing-price"><span>$</span>5</div>
+      <div class="pricing-period">per month, after free trial</div>
+      <div class="pricing-features">
+        <div class="pricing-feature">30-day free trial, no credit card needed</div>
+        <div class="pricing-feature">Unlimited automatic transfers</div>
+        <div class="pricing-feature">Connect any US bank account</div>
+        <div class="pricing-feature">Custom giving percentage</div>
+        <div class="pricing-feature">Multiple trigger options</div>
+        <div class="pricing-feature">Full transfer history</div>
+        <div class="pricing-feature">Cancel anytime</div>
+      </div>
+      <a href="/signup.html" class="btn-primary" style="width:100%;justify-content:center;font-size:16px;padding:16px;">Start your free trial →</a>
+      <p class="pricing-trial">30 days free. Then $5/month. Cancel anytime.</p>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <a href="/" class="footer-logo"><img src="/logo.png" alt="Givo"></a>
+  <div class="footer-links">
+    <a href="/privacy.html">Privacy</a>
+    <a href="/terms.html">Terms</a>
+    <a href="mailto:noreply@givo.live">Contact</a>
+  </div>
+  <div class="footer-copy">© 2026 Givo. All rights reserved.</div>
+</footer>
+
 <script>
-  const token = localStorage.getItem('givo_token');
-  if (token) window.location.href = '/dashboard.html';
-  else window.location.href = '/signup.html';
+// Redirect logged in users to dashboard
+if (localStorage.getItem('givo_token')) {
+  window.location.href = '/dashboard.html';
+}
 </script>
+
 </body>
 </html>
