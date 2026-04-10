@@ -388,7 +388,6 @@ function connectBank(type) {
   var data = enrollment.enrollment || enrollment;
   var name = (data.institution && data.institution.name) ? data.institution.name : 'Connected Bank';
   var tellerToken = data.accessToken || data.access_token || data.token || data.id;
-  ...
       localStorage.setItem('givo_' + type + '_bank', JSON.stringify({ token: tellerToken, name: name }));
       try {
         await fetch(API + '/api/banks', {
