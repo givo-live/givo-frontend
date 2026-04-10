@@ -384,6 +384,7 @@ function connectBank(type) {
     applicationId: TELLER_APP_ID,
     environment: 'development',
    onSuccess: async function(enrollment) {
+      token = localStorage.getItem('givo_token');
   console.log('Teller enrollment:', JSON.stringify(enrollment));  // ADD THIS LINE
   var data = enrollment.enrollment || enrollment;
   var name = (data.institution && data.institution.name) ? data.institution.name : 'Connected Bank';
