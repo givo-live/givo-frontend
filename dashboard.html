@@ -382,7 +382,7 @@ function checkSetupComplete() {
 function connectBank(type) {
   var tellerConnect = TellerConnect.setup({
     applicationId: TELLER_APP_ID,
-    environment: 'sandbox',
+    environment: 'development',
     onSuccess: async function(enrollment) {
       var data = enrollment.enrollment || enrollment;
       var name = (data.institution && data.institution.name) ? data.institution.name : 'Connected Bank';
