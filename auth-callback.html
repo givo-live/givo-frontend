@@ -48,6 +48,7 @@ async function handleCallback() {
 
       if (user && user.id) {
         localStorage.setItem('givo_token', accessToken);
+localStorage.setItem('givo_refresh_token', refreshToken);
         localStorage.setItem('givo_user', JSON.stringify(user));
         window.location.replace('/dashboard.html');
         return;
