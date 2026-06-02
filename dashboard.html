@@ -318,6 +318,8 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22p
 <script src="https://cdn.teller.io/connect/connect.js"></script>
 <script>
 var API = 'https://givo-backend-v2-production.up.railway.app';
+var SUPABASE_URL = 'https://jhvlyzhphddripwipkqf.supabase.co';
+var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impodmx5emhwaGRkcmlwd2lwa3FmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NTYxNjEsImV4cCI6MjA5MDAzMjE2MX0.e-RuMXMvJl-2slblxt2zf97JCGaxCADCj1ubRqbnXJw';
 var TELLER_APP_ID = 'app_pq9heighb572k1h1sm000';
 var token = null, user = null, currentTrigger = 'all';
 var step2Done = false, step3Done = false;
@@ -330,10 +332,31 @@ var step2Done = false, step3Done = false;
   }
 })();
 
+async function refreshTokenIfNeeded() {
+  var refresh = localStorage.getItem('givo_refresh_token');
+  if (!refresh) return;
+  try {
+    var res = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=refresh_token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
+      body: JSON.stringify({ refresh_token: refresh })
+    });
+    var data = await res.json();
+    if (data.access_token) {
+      localStorage.setItem('givo_token', data.access_token);
+      localStorage.setItem('givo_refresh_token', data.refresh_token);
+      token = data.access_token;
+    }
+  } catch(e) {
+    console.error('Token refresh failed:', e);
+  }
+}
+
 window.addEventListener('load', async function() {
   token = localStorage.getItem('givo_token');
   var userStr = localStorage.getItem('givo_user');
   if (!token || !userStr) return window.location.href = '/login.html';
+  await refreshTokenIfNeeded();
   user = JSON.parse(userStr);
   document.getElementById('navEmail').textContent = user.email;
   document.getElementById('settingsEmail').textContent = user.email;
@@ -383,12 +406,12 @@ function connectBank(type) {
   var tellerConnect = TellerConnect.setup({
     applicationId: TELLER_APP_ID,
     environment: 'development',
-   onSuccess: async function(enrollment) {
+    onSuccess: async function(enrollment) {
       token = localStorage.getItem('givo_token');
-  console.log('Teller enrollment:', JSON.stringify(enrollment));  // ADD THIS LINE
-  var data = enrollment.enrollment || enrollment;
-  var name = (data.institution && data.institution.name) ? data.institution.name : 'Connected Bank';
-  var tellerToken = data.accessToken || data.access_token || data.token || data.id;
+      console.log('Teller enrollment:', JSON.stringify(enrollment));
+      var data = enrollment.enrollment || enrollment;
+      var name = (data.institution && data.institution.name) ? data.institution.name : 'Connected Bank';
+      var tellerToken = data.accessToken || data.access_token || data.token || data.id;
       localStorage.setItem('givo_' + type + '_bank', JSON.stringify({ token: tellerToken, name: name }));
       try {
         await fetch(API + '/api/banks', {
